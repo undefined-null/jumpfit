@@ -1,0 +1,70 @@
+.home-page {
+	overflow-y: hidden;
+	.curr {
+		-webkit-transform: scale(1.05);
+		transform: scale(1.05);
+		border: 4px solid #ffffff;
+		box-shadow: 0 0 3px 1px rgba(255, 255, 255, 0.5);
+	}
+	// 我的
+	.rec_my_collect,
+	.rec_my_train {
+		text-align: center;
+		line-height: 240px;
+		font-size: 64px;
+		color: #FFFFFF;
+		font-weight: bolder;
+		background-color: #7448D0;
+	}
+	.rec_my_collect {
+		background-color: #DFA64D;
+	}
+	.module_item5 {
+		background-color: #4C8FFD;
+	}
+	// 氧秀模板
+	.module_boxy {
+		.module_item4:first-child {
+			width: 868px;
+			height: 500px;
+		}
+		.module_item4:nth-child(2),
+		.module_item4:nth-child(3) {
+			width: 414px;
+			height: 500px;
+		}
+	}
+	.module_item_class {
+		background-color: #6672A4;
+	}
+	.empty_module {
+		height: 0px;
+	}
+	.module_item_more {
+		display: flex;
+		display: -webkit-box; /* 老版本语法: Safari, iOS, Android browser, older WebKit browsers. */
+		display: -moz-box; /* 老版本语法: Firefox (buggy) */
+		display: -ms-flexbox; /* 混合版本语法: IE 10 */
+		display: -webkit-flex; /* 新版本语法: Chrome 21+ */
+		/* // ----------------- */
+		justify-content: center;
+		-webkit-box-pack: center;
+		-moz-justify-content: center;
+		-webkit-justify-content: center;
+		/* // ----------------- */
+		align-items: center;
+		-webkit-box-align: center;
+		-moz-align-items: center;
+		-webkit-align-items: center;
+		
+		background-color: #6672A4;
+		.module_title1 {
+			width: auto;
+			padding: 0;
+			font-size: 56px;
+			position: static;
+			background-color: transparent;
+			color: #ffffff;
+		}
+	}
+}

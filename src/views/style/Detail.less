@@ -1,0 +1,67 @@
+.detail-page {
+	overflow-y: hidden;
+	.empty_module {
+		height: 90px;
+	}
+	.curr {
+		border: 4px solid #ffffff;
+		border-color: #FFFFFF!important;
+		box-shadow: 0 0 3px 1px rgba(255, 255, 255, 0.5);
+		&.module_item3 {
+			-webkit-transform: scale(1.05);
+			transform: scale(1.05);
+		}
+	}
+	.detail_cover {
+		width: 800px;
+		height: 460px;
+		// overflow: hidden;
+		img {
+			width: 100%;
+			height: 100%;
+			border-radius: 10px;
+		}
+	}
+	.detail_title {
+		width: 936px;
+		font-size: 56px;
+	}
+	.detail_intro {
+		padding: 10px 20px;
+		box-sizing: border-box;
+		border-radius: 10px;
+		background-color: rgba(102,114,164,0.5);
+		width: 940px;
+		line-height: 44px;
+		border: 4px solid transparent;
+	}
+	.detail_btnbox {
+		width: 100%;
+		position: absolute;
+		bottom: 0;
+		.detail_btnitem {
+			border: 4px solid transparent;
+			width: 200px;
+			height: 120px;
+			border-radius: 10px;
+			padding: 20px;
+			box-sizing: border-box;
+			background-color: rgba(102,114,164,0.5);
+		}
+		.detail_btnitem.collect {
+			color: #FF3131;
+		}
+		.detail_btnitem:last-child {
+			background-color: rgba(139,159,249,0.1);
+		}
+	}
+	.module_box {
+		width:fit-content,
+	}
+	.detailmodulebox,
+	.recmodulebox {
+		overflow-x: hidden;
+		padding: 20px;
+		margin: -20px;
+	}
+}

@@ -1,0 +1,218 @@
+// flex兼容写法：https://blog.csdn.net/qq_22844483/article/details/72773490
+//清除浮动
+.clearfix:after {
+	content: ''; /*设置内容为空*/
+	height: 0; /*高度为0*/
+	line-height: 0; /*行高为0*/
+	display: block; /*将文本转为块级元素*/
+	visibility: hidden; /*将元素隐藏*/
+	clear: both; /*清除浮动*/
+}
+.clearfix {
+	zoom: 1; /*为了兼容IE*/
+}
+//强制样式
+.none {
+	display: none !important;
+}
+//位置样式
+.fl {
+	float: left;
+}
+.he {
+	height: 100%;
+}
+.wi {
+	width: 100%;
+}
+.block {
+	display: block;
+}
+.fr {
+	float: right;
+}
+.tc {
+	text-align: center;
+}
+.tl {
+	text-align: left;
+}
+.tr {
+	text-align: right;
+}
+.curpin {
+	cursor: pointer;
+}
+.h30 {
+	height: 30px;
+}
+
+/* 一行点点点 */
+.line-clamp {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.line-clamp-1 {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-line-clamp: 1;
+	-webkit-box-orient: vertical;
+	word-break: break-all;
+}
+.line-clamp-2 {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	word-break: break-all;
+}
+.line-clamp-3 {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	word-break: break-all;
+}
+
+/* 图片背景样式 */
+.aspect-fill {
+	//放模式，保持纵横比缩放图片，只保证图片的短边能完全显示出来
+	overflow: hidden;
+	background-position: center center !important;
+	background-repeat: no-repeat !important;
+	-webkit-background-size: cover !important;
+	-moz-background-size: cover !important;
+	background-size: cover !important;
+}
+.border {
+	border: 1px solid red;
+}
+//解决上下居中的问题，如果flex不适合，就自动用这个
+.vertical-align {
+	&::before {
+		display: inline-block;
+		content: '';
+		height: 100%;
+		vertical-align: middle;
+	}
+}
+
+//整页fiexd mask
+.page-mask {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 999;
+
+	display: flex;
+	display: -webkit-box; /* 老版本语法: Safari, iOS, Android browser, older WebKit browsers. */
+	display: -moz-box; /* 老版本语法: Firefox (buggy) */
+	display: -ms-flexbox; /* 混合版本语法: IE 10 */
+	display: -webkit-flex; /* 新版本语法: Chrome 21+ */
+	/* // ----------------- */
+	justify-content: center;
+	-webkit-box-pack: center;
+	-moz-justify-content: center;
+	-webkit-justify-content: center;
+	/* // ----------------- */
+	align-items: center;
+	-webkit-box-align: center;
+	-moz-align-items: center;
+	-webkit-align-items: center;
+}
+//三角形箭头的样式
+.custom-toast {
+	position: relative;
+	z-index: 999;
+	width: 200px;
+	//display: flex !important;
+	.custom-content {
+		background-color: #fff;
+		font-size: 12px;
+		line-height: 18px;
+		color: #fff;
+		padding: 10px 13px;
+		border-radius: 8px;
+		text-align: left;
+		width: 100%;
+	}
+	.triangle_border {
+		width: 0;
+		height: 0;
+		border-style: solid;
+		position: relative;
+	}
+	&.up {
+		flex-direction: column;
+		align-items: flex-start;
+		.triangle_border {
+			border-width: 0 10px 10px;
+			border-color: transparent transparent #fff; /*透明 透明  灰*/
+		}
+	}
+	&.down {
+		flex-direction: column;
+		align-items: flex-start;
+		.triangle_border {
+			border-width: 10px 10px 0;
+			border-color: #fff transparent transparent; /*灰 透明 透明 */
+		}
+	}
+	&.left {
+		.triangle_border {
+			border-width: 10px 10px 10px 0;
+			border-color: transparent #fff transparent transparent; /*透明 灰 透明 透明 */
+		}
+	}
+	&.right {
+		.triangle_border {
+			border-width: 10px 0 10px 10px;
+			border-color: transparent transparent transparent #fff; /*透明 透明 透明 灰*/
+		}
+	}
+	&.flex-end {
+		align-items: flex-end;
+	}
+}
+/*震动动画*/
+.animate-bounce-up {
+	animation: bounce-up 0.2s ease-in 1;
+}
+@keyframes bounce-up {
+	10% {
+		transform: translateY(5px);
+	}
+	20% {
+		transform: translateY(0);
+	}
+	30% {
+		transform: translateY(-5px);
+	}
+	40% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(5px);
+	}
+	60% {
+		transform: translateY(0);
+	}
+	70% {
+		transform: translateY(-5px);
+	}
+	80% {
+		transform: translateY(0);
+	}
+	90% {
+		transform: translateY(5px);
+	}
+	100% {
+		transform: translateY(0);
+	}
+}

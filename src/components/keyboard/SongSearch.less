@@ -1,0 +1,103 @@
+// 首页顶部的样式
+.key-board-box {
+	width: 620px;
+	.search-input {
+		height: 82px;
+		border: 2px solid #fff;
+		border-radius: 10px;
+		font-size: 50px;
+		overflow: hidden;
+	}
+	.key-value-box {
+		overflow: hidden;
+		height: 600px;
+		padding: 15px 0;
+		.key-value {
+			width: 80px;
+			height: 80px;
+			margin: 7.5px 14px;
+			font-size: 50px;
+			&:nth-of-type(6n) {
+				margin-right: 0;
+			}
+			&:nth-of-type(6n + 1) {
+				margin-left: 0;
+			}
+
+			&.curr {
+				border: 4px solid #fff;
+				border-radius: 10px;
+			}
+		}
+	}
+	.number-value-box {
+		height: 600px;
+		.key-value-button {
+			width: 188px;
+			height: 118px;
+			border: 4px solid rgba(0, 0, 0, 0);
+			border-radius: 14px;
+			margin: 14px;
+			&.curr,
+			&.currs {
+				border: 4px solid #fff;
+				opacity: 1;
+				.key-value {
+					opacity: 1;
+					background-color: #bc8bb9;
+				}
+			}
+			&.currs {
+				border-color: #fff;
+				.key-value {
+					background-color: #ff5046;
+				}
+			}
+			&:nth-of-type(3n) {
+				margin-right: 0;
+			}
+			&:nth-of-type(3n + 1) {
+				margin-left: 0;
+			}
+		}
+		.key-value {
+			background: rgba(188, 139, 185, 0.5);
+			border-radius: 10px;
+			font-size: 50px;
+			line-height: 50px;
+			.small-key {
+				font-size: 32px;
+				line-height: 32px;
+				margin-top: 4px;
+			}
+			&.font36 {
+				font-size: 36px;
+			}
+		}
+	}
+
+	.key-board-change {
+		height: 80px;
+		.change-button {
+			height: 80px;
+			border: 4px solid transparent;
+			border-radius: 10px;
+			font-size: 36px;
+			.in-border-xx {
+				border: 2px solid #fff;
+				padding: 0 36px;
+				width: 100%;
+				height: 100%;
+				border-radius: 10px;
+			}
+			&.curr {
+				height: 80px;
+				background-color: #bc8bb9;
+				border: 4px solid #fff;
+				.in-border-xx {
+					border-color: transparent;
+				}
+			}
+		}
+	}
+}
