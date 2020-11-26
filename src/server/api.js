@@ -17,7 +17,7 @@ export const albumDetailApi = data => axiosIns.get(`home/detail`, data);
 export const videoApi = data => axiosIns.get(`home/video`, data);
 // 记录播放时长
 export const videoUpdataApi = data => axiosIns.get(`history/update`, data);
-// 记录播放时长
+// 运动数据更新
 export const sportUpdataApi = data => axiosIns.get(`sport/totalSport`, data);
 // 播放记录
 export const historyApi = data => axiosIns.get(`history/list`, data);

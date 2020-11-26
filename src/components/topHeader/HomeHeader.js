@@ -55,15 +55,14 @@ class HomeHeader extends React.Component {
 			this.ifUpdate = true;
 		}
 		if (
-			this.props.routerDomList[this.props.routerDomList.length - 1].pageId === this.props.pageId &&
 			this.ifUpdate
 		) {
 			//当前页面已经是展示的页面
 			this.ifUpdate = false;
 			//更新完毕后，删除dom节点
-			this.props.deleteCompDom(this.compId);
-			// 增加dom节点
-			this.props.editeDomList([this.state.buttonList]);
+			// this.props.deleteCompDom(this.compId);
+			// // 增加dom节点
+			// this.props.editeDomList([this.state.buttonList]);
 		}
 	}
 	// 组件将要卸载
@@ -169,12 +168,16 @@ class HomeHeader extends React.Component {
 						src={this.props.userInfo.id ? this.props.userInfo.avatar : require('../../assets/images/home_head.png')}
 						alt="search-icon"
 					></img>
-					<span  className={'ml16 mr24' + (this.props.userInfo.id ? ' none' : '')}>登录</span>
-					<div  className={'ml16 mr24 flex-ac fs26' + (this.props.userInfo.id ? '' : ' none')}>
-						总时长(分钟):<span className={'font-bold fs32 ml16'}>{this.props.userInfo.total_duration}</span>
-						<div className={'header_line'}></div>
-						总消耗(千卡):<span className={'font-bold fs32 ml16'}>{this.props.userInfo.total_calorie}</span>
-					</div>
+					{this.props.userInfo.id ? 
+						<div  className={'ml16 mr24 flex-ac fs26'}>
+							总时长(分钟):<span className={'font-bold fs32 ml16'}>{Math.floor(this.props.userInfo.total_duration/(60 *1000))}</span>
+							<div className={'header_line'}></div>
+							总消耗(千卡):<span className={'font-bold fs32 ml16'}>{this.props.userInfo.total_calorie}</span>
+						</div>
+					
+					:
+						<span  className={'ml16 mr24'}>登录</span>
+					}
 				</div>
 			</div>
 		);

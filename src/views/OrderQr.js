@@ -1,20 +1,22 @@
 import React, { Component } from 'react';
-import './style/Login.less';
-import { userCodeApi,userStatusApi } from '../server/api';
+import './style/OrderQr.less';
+import { buyApi,buyStatusApi } from '../server/api';
 import { mapDispatch, TvKeyCode, shouldComponentCurrUpdate } from '../utils/pageDom';
 import QRCode from 'qrcode.react';
 import { connect } from 'react-redux';
 import Toast from '../components/toast/Index';
 import $ from 'jquery';
 
-class Login extends Component {
+class OrderQr extends Component {
 	constructor(props) {
 		super(props);
 		//设置模块首页组件的随机标识
-		this.loginRandomId = this.getRandom();
+		this.orderRandomId = this.getRandom();
 		this.state = {
 			userStatus: false,
-			qrCode: '',
+			qrCode: '', // 二维码
+			orderId: '', // 订单
+			payType: 1,// 订单类型 1.会员卡 2.单片
 			userInfo: {
 				avatar:"https://thirdwx.qlogo.cn/mmopen/vi_32/DYAIOgq83eobAYmt4D1FGQniafcgqVzkTGnGB7u7SicpSSuziaQdwXYcfbGUkr0dic7Ux0RmQgiblg5a081picTLZ8ow/132",
 				id:"opXCkjkGTWXzYe1rYMePX_sRsH4U",
@@ -35,7 +37,8 @@ class Login extends Component {
 	// 将要加载页面dom
 	componentWillMount() {
 		console.log('进入登录页面', this.props.params);
-		this.getQrCode()
+		
+		this.getQrCode(this.props.params)
 	}
 	// 组件第一次渲染完成，此时dom节点已经生成
 	componentDidMount() {
@@ -105,30 +108,54 @@ class Login extends Component {
 	}
 	
 	// 获取登录二维码
-	async getQrCode() {
+	async getQrCode(params) {
+		let rdata = {
+				cardid: params.card_id
+			}
+		if(params.card_id) {
+			rdata = {
+				cardid: params.card_id
+			}
+		} else if(params.album_id){
+			rdata = {
+				albumid: params.album_id
+			}
+		} else {
+			// 没有拿到会员卡或者专辑
+			this.deleteRouter(1)
+			this.deletePageDom(1)
+			return
+		}
+		
 		try {
-			let res = await userCodeApi()
+			let res = await buyApi(rdata)
 			console.log(res)
 			this.setState({
-				qrCode: res
+				qrCode: res.data.code_url,
+				orderId: res.data.orderid,
+				payType: res.paytype,
 			})
-			this.getUserStatus()
+			this.getOrderStatus()
 		} catch(e) {
 			console.log(e)
 		}
 	}
-	// 检查登录状态
-	async getUserStatus() {
+	// 检查支付状态
+	async getOrderStatus() {
 		try {
-			let res = await userStatusApi()
-			if(res) {
-				this.props.setUserInfo(res)
-				this.props.deleteRouter(1,{asd:'asd'});
+			let res = await buyStatusApi({
+				orderid: this.state.orderId,
+				paytype: this.state.payType
+			})
+			if(res === 1) {
+				this.props.deleteRouter(1,{
+					payStatus: true
+				});
 				this.props.deletePageDom(1);
-				Toast.plain('登录成功',2000)
-			} else if($('.login-page').is(':visible')) {
+				Toast.plain('支付成功',2000)
+			} else if($('.order-page').is(':visible')) {
 				setTimeout(()=> {
-					this.getUserStatus()
+					this.getOrderStatus()
 				},1000)
 			}
 		} catch(e) {
@@ -139,7 +166,7 @@ class Login extends Component {
 	// 页面渲染
 	render() {
 		return (
-			<div className={'login-page page-mask flex-ajc ' + this.props.display}>
+			<div className={'order-page page-mask flex-ajc ' + this.props.display}>
 				<div>
 					<div className={'qr_icon'}>
 						{this.state.qrCode !== '' ? (
@@ -157,7 +184,7 @@ class Login extends Component {
 							<img className={'loading'} src={require('../assets/images/loading.gif')} alt=""></img>
 						)}
 					</div>
-					<div className="login_title tc">请使用微信扫码登录</div>
+					<div className="login_title tc">请使用微信扫码支付</div>
 				</div>
 			</div>
 		);
@@ -172,4 +199,4 @@ function mapState(state) {
 	};
 }
 
-export default Login = connect(mapState, mapDispatch)(Login);
+export default OrderQr = connect(mapState, mapDispatch)(OrderQr);

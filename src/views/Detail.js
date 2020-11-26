@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import './style/Detail.less';
-import { albumDetailApi } from '../server/api';
+import { albumDetailApi,collectApi } from '../server/api';
 import Init from './Init';
 import { mapDispatch, TvKeyCode, shouldComponentCurrUpdate } from '../utils/pageDom';
 import { connect } from 'react-redux';
-// import Toast from '../components/toast/Index';
+import Toast from '../components/toast/Index';
 import $ from 'jquery';
 
 class Detail extends Component {
@@ -42,6 +42,7 @@ class Detail extends Component {
 			detailList: [ // 视频列表
 				{
 					title: 'xiangq',
+					cover: '/codoon/payNO.png',
 					cursor: this.setCursorObj(this.props.pageId, this.detailRandomId, 'c')
 				}
 			],
@@ -72,6 +73,7 @@ class Detail extends Component {
 					album:[
 						{
 							title:'推荐详情',
+							cover: '/codoon/payNO.png',
 							cursor: this.setCursorObj(this.props.pageId, this.detailRandomId, 'd')
 						},
 					]
@@ -111,6 +113,12 @@ class Detail extends Component {
 	// 组件中途有更新dom，更新完成后的操作
 	componentDidUpdate(prevProps, prevState) {
 		console.log('detail 加载完成')
+		if(prevProps.backParams) {
+			if(prevProps.backParams.payStatus) {
+				this.getAlbumDetail(this.props.params.detail_id,this.props.params.module_id)
+				prevProps.backParams.payStatus = false
+			}
+		}
 		// if (
 		// 	this.state.initDataDetail &&
 		// 	(
@@ -178,6 +186,95 @@ class Detail extends Component {
 					}
 				})
 			})
+			// 购买点击
+			if(this.state.buttonList[0].cursor.curr) {
+				if(this.state.album.moduleid === 'yangxiu') {
+					this.props.pushRouter({
+						name: 'orderqr',
+						pageId: this.getRandom(),
+						params: {
+							album_id: this.state.album.id,
+						}
+					});
+				}
+			}
+			// 播放点击
+			if(this.state.buttonList[1].cursor.curr) {
+				if(this.state.detailList[0].playable === 0) {
+					// 购买
+					if(this.state.album.moduleid === 'yangxiu') {
+						Toast.plain('请您先购买专辑',2000)
+						// this.props.pushRouter({
+						// 	name: 'orderqr',
+						// 	pageId: this.getRandom(),
+						// 	params: {
+						// 		album_id: this.state.album.id,
+						// 	}
+						// });
+					} else {
+						Toast.plain('请您先购买会员',2000)
+					}
+				} else {
+					this.props.pushRouter({
+						name: 'video',
+						pageId: this.getRandom(),
+						params: {
+							video_id: this.state.detailList[0].id,
+							album_id: this.state.album.id,
+							module_id: this.state.moduleId,
+						}
+					});
+				}
+			}
+			// 收藏点击
+			if(this.state.buttonList[2].cursor.curr) {
+				this.updataCollect()
+			}
+			// 视频点击 
+			this.state.detailList.forEach(item => {
+				if(item.cursor.curr) {
+					if(item.playable === 0) {
+						if(item.moduleid === 'yangxiu') {
+							Toast.plain('请您先购买专辑',2000)
+						} else {
+							Toast.plain('请您先购买会员',2000)
+						}
+					} else {
+						this.props.pushRouter({
+							name: 'video',
+							pageId: this.getRandom(),
+							params: {
+								video_id: item.id,
+								album_id: this.state.album.id,
+								module_id: this.state.moduleId,
+							}
+						});
+					}
+					return
+				}
+			})
+			
+		}
+	}
+	// 收藏
+	async updataCollect() {
+		if(!this.props.userInfo.id) {
+			Toast.plain('请先登录',2000)
+			return
+		}
+		try{
+			let res = collectApi({
+				albumid: this.state.album.id
+			})
+			if(res) {
+				Toast.plain(this.state.album.collect === 0 ? '收藏成功' : '您已取消收藏',2000)
+				this.state.album.collect = this.state.album.collect === 0 ? 1 : 0
+				this.setState({
+					album: this.state.album
+				})
+			}
+		} catch(e) {
+			console.log(e)
 		}
 	}
 	// 获取模块列表
@@ -207,7 +304,6 @@ class Detail extends Component {
 			})
 			res.recommend.forEach((item,index)=> {
 				item.album.forEach((item1,index1)=> {
-					item1.cursor = this.setCursorObj(this.props.pageId, this.detailRandomId, 'd')
 					item1.cursor = this.setCursorObj(this.props.pageId, this.detailRandomId, 'd')
 					if(index1 === item.album.length-1 && index1 === 0){
 						item1.cursor = this.setCursorObj(this.props.pageId, this.detailRandomId, 'd',null,{
@@ -263,17 +359,25 @@ class Detail extends Component {
 							<div className={this.state.album.calorie ? '' : 'none'}>燃脂:{this.state.album.calorie}千卡</div>
 						</div>
 						<div className={'detail_intro mt16 fs32' + (this.state.intro[0].cursor.curr ? ' curr' : '')} ref={this.state.intro[0].cursor.refs}>
-							<div className={'line-clamp-3'}>{this.state.intro[0].intro}是的评论家是的评论家是的评论家是的评论家是的评论家是的评论家是的评论家是的评论家是的评论家是的评论家是的评论家是的评论家是的评论家是的评论家是的评论家是的评论家是的评论家是的评论家是的评论家是的评论家是的评论家是的评论家是的评论家是的评论家是的评论家是的评论家</div>
+							<div className={'line-clamp-3'}>{this.state.intro[0].intro}</div>
 						</div>
 						<div className={'detail_btnbox flex-bt fs32'}>
-							<div className={'detail_btnitem flex-ajc' + (this.state.buttonList[0].cursor.curr ? ' curr' : '')} ref={this.state.buttonList[0].cursor.refs}>
-								购买 {this.state.album.moduletitle} 会员
-							</div>
+							{this.state.album.moduleid === 'yangxiu' ?
+								<div className={'detail_btnitem flex-ajc' + (this.state.buttonList[0].cursor.curr ? ' curr' : '') + (!this.state.album.isship ? '' : ' none')}
+									ref={!this.state.album.isship ? this.state.buttonList[0].cursor.refs : ''}>
+									<div className={'tc'}><div className={'mb24'} style={{color:this.state.album.moduleidcolor}}>{this.state.album.price} 元</div>购买专辑</div>
+								</div>
+							:
+								<div className={'detail_btnitem flex-ajc' + (this.state.buttonList[0].cursor.curr ? ' curr' : '') + (!this.state.album.isship ? '' : ' none')}
+									ref={!this.state.album.isship ? this.state.buttonList[0].cursor.refs : ''}>
+									购买 {this.state.album.moduletitle} 会员
+								</div>
+							}
 							<div className={'detail_btnitem flex-ajc' + (this.state.buttonList[1].cursor.curr ? ' curr' : '')} ref={this.state.buttonList[1].cursor.refs}>
 								<img className={'detail_btnimg mr24'} src={require('../assets/images/detail_play.png')} alt={'播放'}></img>播放
 							</div>
 							<div className={'detail_btnitem flex-ajc' + (this.state.buttonList[2].cursor.curr ? ' curr' : '')} ref={this.state.buttonList[2].cursor.refs}>
-								<img className={'detail_btnimg mr24'} src={require('../assets/images/detail_collect0.png')} alt={'收藏'}></img>收藏
+								<img className={'detail_btnimg mr24'} src={require('../assets/images/detail_collect' + this.state.album.collect + '.png')} alt={'收藏'}></img>收藏
 							</div>
 							
 							<div className={'detail_btnitem'} style={{color:this.state.album.moduleidcolor}}>内容来自{this.state.album.moduletitle}</div>
@@ -286,6 +390,7 @@ class Detail extends Component {
 					{this.state.detailList.map((item,index)=>{
 						return(<div className={'mt40 mr40 module_item3' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'d' + index}>
 							<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
+							<img className={'module_img2' + (this.state.album.isship ? ' none' : '')} src={require('../assets/images/paid' + (item.playable === 0 ? 1 : 0) + '.png')} alt={'费用'}></img>
 							<div className={'module_title1'}>{item.title}</div>
 						</div>)
 					})}
@@ -299,6 +404,7 @@ class Detail extends Component {
 								{item.album.map((item1,index1)=>{
 									return (<div className={'mt40 mr40 module_item3' + (item1.cursor.curr ? ' curr' : '')} ref={item1.cursor.refs} key={'c' + index + '' + index1}>
 										<img className={'module_img1'} src={this.state.imgPath + item1.cover} alt={item1.title}></img>
+										<img className={'module_img2'} src={require('../assets/images/paid' + item1.paid + '.png')} alt={'费用'}></img>
 										<div className={'module_title1'}>{item1.title}</div>
 									</div>
 								)})}
@@ -314,7 +420,8 @@ class Detail extends Component {
 //【焦点】需要渲染什么数据
 function mapState(state) {
 	return {
-		routerDomList: state.routerDomList
+		routerDomList: state.routerDomList,
+		userInfo: state.userInfo
 	};
 }
 

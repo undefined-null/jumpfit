@@ -10,14 +10,15 @@ class ClassList extends Component {
 	constructor(props) {
 		super(props);
 		//设置模块首页组件的随机标识
-		this.albumRandomId = this.getRandom();
+		this.classRandomId = this.getRandom();
 		this.state = {
 			imgPath: '', // 图片路径
 			classTitle: '分类标题', // 分类标题
 			albumList: [
 				{
 					title: 'xiangq',
-					cursor: this.setCursorObj(this.props.pageId, this.recTopId, 'c',null,{left:'no'})
+					cover: '/codoon/payNO.png',
+					cursor: this.setCursorObj(this.props.pageId, this.classRandomId, 'c',null,{left:'no'})
 				}
 			], // 视频列表
 			//是否隐藏初始化页面
@@ -111,11 +112,11 @@ class ClassList extends Component {
 			}
 			res.albumlist.forEach((item,index)=>{
 				if((index) % 3 === 0) {
-					item.cursor = this.setCursorObj(this.props.pageId, this.homeModuleId, 'e', null,{left: 'right'});
+					item.cursor = this.setCursorObj(this.props.pageId, this.classRandomId, 'c', null,{left: 'right'});
 				} else if((index+1) % 3 === 0) {
-					item.cursor = this.setCursorObj(this.props.pageId, this.homeModuleId, 'e', null,{right: 'left'});
+					item.cursor = this.setCursorObj(this.props.pageId, this.classRandomId, 'c', null,{right: 'left'});
 				} else {
-					item.cursor = this.setCursorObj(this.props.pageId, this.homeModuleId, 'e');
+					item.cursor = this.setCursorObj(this.props.pageId, this.classRandomId, 'c');
 				}
 			})
 			console.log(res)
@@ -139,6 +140,7 @@ class ClassList extends Component {
 					{this.state.albumList.map((item,index)=>{
 						return(<div className={'mt40 module_item3 ' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'d' + index}>
 							<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
+							<img className={'module_img2'} src={require('../assets/images/paid' + (item.paid === 1 ? 1 : 0) + '.png')} alt={'费用'}></img>
 							<div className={'module_title1'}>{item.title}</div>
 						</div>)
 					})}

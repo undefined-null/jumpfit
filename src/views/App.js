@@ -7,9 +7,11 @@ import ExitApp from './ExitApp';
 import ClassList from './ClassList';
 import BrokenNetwork from './BrokenNetwork';
 import Detail from './Detail';
+import Video from './Video';
 import Login from './Login';
 import MyInfo from './MyInfo';
 import Search from './Search';
+import OrderQr from './OrderQr';
 import Toast from '../components/toast/Index';
 import { getRandom, TvKeyCode, mapDispatch } from '../utils/pageDom';
 class App extends Component {
@@ -68,8 +70,9 @@ class App extends Component {
 					let display = index < this.props.router.length - 1 ? 'none' : '';
 					// 判断，如果最后一层是已点歌曲的弹窗，就将上一层设置为可显示（只有最后一层是的时候才可以）
 					if (
-						(this.props.router[this.props.router.length - 1].name === 'exitApp' ||
-							this.props.router[this.props.router.length - 1].name === 'login'
+						(this.props.router[this.props.router.length - 1].name === 'exitApp'
+							|| this.props.router[this.props.router.length - 1].name === 'login'
+							|| this.props.router[this.props.router.length - 1].name === 'orderqr'
 						) &&
 						index === this.props.router.length - 2
 					) {
@@ -77,36 +80,46 @@ class App extends Component {
 					}
 					if (item.name === 'home') {
 						// 进入首页
-						return <Home display={display} pageId={item.pageId} key={index}></Home>;
+						return <Home display={display} pageId={item.pageId} backParams={item.backParams} key={index}></Home>;
 					} else if (item.name === 'classlist') {
 						// 进入模板
 						return (
-							<ClassList display={display} pageId={item.pageId} key={index} params={item.params}></ClassList>
+							<ClassList display={display} pageId={item.pageId} backParams={item.backParams} key={index} params={item.params}></ClassList>
 						);
 					} else if (item.name === 'search') {
 						// 进入搜索页
 						return (
-							<Search display={display} pageId={item.pageId} key={index} params={item.params}></Search>
+							<Search display={display} pageId={item.pageId} backParams={item.backParams} key={index} params={item.params}></Search>
 						);
 					} else if (item.name === 'detail') {
 						// 进入详情
 						return (
-							<Detail display={display} pageId={item.pageId} key={index} params={item.params}></Detail>
+							<Detail display={display} pageId={item.pageId} backParams={item.backParams} key={index} params={item.params}></Detail>
+						);
+					} else if (item.name === 'video') {
+						// 进入详情
+						return (
+							<Video display={display} pageId={item.pageId} backParams={item.backParams} key={index} params={item.params}></Video>
 						);
 					} else if (item.name === 'myinfo') {
 						// 个人信息
 						return (
-							<MyInfo display={display} pageId={item.pageId} key={index} params={item.params}></MyInfo>
+							<MyInfo display={display} pageId={item.pageId} backParams={item.backParams} key={index} params={item.params}></MyInfo>
 						);
 					} else if (item.name === 'login') {
 						// 登录二维码
 						return (
-							<Login display={display} pageId={item.pageId} key={index} params={item.params}></Login>
+							<Login display={display} pageId={item.pageId} backParams={item.backParams} key={index} params={item.params}></Login>
+						);
+					} else if (item.name === 'orderqr') {
+						// 订单二维码
+						return (
+							<OrderQr display={display} pageId={item.pageId} backParams={item.backParams} key={index} params={item.params}></OrderQr>
 						);
 					} else if (item.name === 'exitApp') {
 						// 退出程序提醒页面
 						return (
-							<ExitApp display={display} pageId={item.pageId} key={index} params={item.params}></ExitApp>
+							<ExitApp display={display} pageId={item.pageId} backParams={item.backParams} key={index} params={item.params}></ExitApp>
 						);
 					} else if (item.name === 'brokenNetwork') {
 						// 退出程序提醒页面
@@ -153,7 +166,7 @@ class App extends Component {
 			case TvKeyCode.KEY_BACK:
 				//返回按钮
 				// console.log('返回上页');
-				let returnArray = ['vipMenu', 'brokenNetwork', 'singSong', 'selectSong'];
+				let returnArray = ['video'];
 				if (
 					this.props.router.length > 1 &&
 					this.props.router[this.props.router.length - 1].name !== 'brokenNetwork'

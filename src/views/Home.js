@@ -75,6 +75,7 @@ class Home extends Component {
 						{
 							id: 0,
 							title: '模块标题',
+							cover: '/codoon/payNO.png',
 							cursor: this.setCursorObj(this.props.pageId, this.homeModuleId, 'c')
 						}
 					]
@@ -99,11 +100,13 @@ class Home extends Component {
 
 	// 组件第一次渲染完成，此时dom节点已经生成
 	componentDidMount() {
+		
 		this.getNav();// 获取导航
 		// this.getHomeIndex();// 获取首页模块
 		// this.setState({
 		// 	initDataRefresh: !this.state.initDataRefresh,
 		// })
+		console.log('首页', this.props.params);
 		this.getClassList('home');// 获取首页分类
 		document.addEventListener('keydown', this.handleKeyDown);
 	}
@@ -175,7 +178,7 @@ class Home extends Component {
 						pageId: this.getRandom(), 
 						params: {
 							detail_id: item.id,
-							module_id: this.state.moduleId
+							module_id: item.moduleid
 						}
 					});
 					return
@@ -189,7 +192,7 @@ class Home extends Component {
 						pageId: this.getRandom(), 
 						params: {
 							detail_id: item.id,
-							module_id: this.state.moduleId
+							module_id: item.moduleid
 						}
 					});
 					return
@@ -203,7 +206,7 @@ class Home extends Component {
 						pageId: this.getRandom(), 
 						params: {
 							detail_id: item.id,
-							module_id: this.state.moduleId
+							module_id: item.moduleid
 						}
 					});
 					return
@@ -217,7 +220,7 @@ class Home extends Component {
 						pageId: this.getRandom(), 
 						params: {
 							detail_id: item.id,
-							module_id: this.state.moduleId
+							module_id: item.moduleid
 						}
 					});
 					return
@@ -234,7 +237,7 @@ class Home extends Component {
 								pageId: this.getRandom(), 
 								params: {
 									category_id: item1.id,
-									module_id: this.state.moduleId
+									module_id: item1.moduleid
 								}
 							});
 						} else {
@@ -243,7 +246,7 @@ class Home extends Component {
 								pageId: this.getRandom(),
 								params: {
 									detail_id: item1.id,
-									module_id: this.state.moduleId
+									module_id: item1.moduleid
 								}
 							});
 						}
@@ -259,7 +262,7 @@ class Home extends Component {
 						pageId: this.getRandom(), 
 						params: {
 							category_id: item.id,
-							module_id: this.state.moduleId
+							module_id: item.moduleid
 						}
 					});
 					return
@@ -353,6 +356,7 @@ class Home extends Component {
 						type: 'more',
 						cover: "",
 						id: item.categoryid,
+						paid: 0,
 						moduleid: "yangxiu",
 						title: "更多",
 					})
@@ -437,13 +441,14 @@ class Home extends Component {
 					compId={this.homeRandomId}
 					navList={this.state.navList}
 					navImgpath={this.state.navImgpath}
-					navCode={'home'}
+					navCode={this.state.moduleId}
 				></NavList>
 					<div className={'module_box flex-bt'}>
 						{this.state.recList.top_up.content.map((item,index) => {
 							if(this.state.moduleId === 'home') {
 							return (<div className={'module_item3 mt40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'tu' + index}>
 									<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
+									<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + '.png')} alt={'费用'}></img>
 									<div className={'module_title1'}>{item.title}</div>
 								</div>)
 						}else {
@@ -459,6 +464,7 @@ class Home extends Component {
 							if(this.state.moduleId === 'home') {
 							return (<div className={'module_item4 mt40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'tr' + index}>
 									<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
+									<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + '.png')} alt={'费用'}></img>
 									<div className={'module_title1'}>{item.title}</div>
 								</div>)
 						}else{return ''}})}
@@ -468,6 +474,7 @@ class Home extends Component {
 							if(this.state.moduleId === 'home') {
 							return (<div className={'module_item3 mt40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'tb' + index}>
 									<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
+									<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + '.png')} alt={'费用'}></img>
 									<div className={'module_title1'}>{item.title}</div>
 								</div>)
 						}else{return ''}})}
@@ -477,6 +484,7 @@ class Home extends Component {
 							if(this.state.moduleId === 'yangxiu') {
 							return (<div className={'module_item3 mt40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'yx' + index}>
 									<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
+									<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + '.png')} alt={'费用'}></img>
 									<div className={'module_title1'}>{item.title}</div>
 								</div>)
 						}else{return ''}})}
@@ -500,8 +508,9 @@ class Home extends Component {
 										+ (item1.type === 'more' ? ' module_item_more' : '')
 										+ (item1.cursor.curr ? ' curr' : '')}
 										ref={item1.cursor.refs} key={'md' + index + '' + index1}>
-										<img className={'module_img1' + (item1.type === 'more' ? ' none' : '')} src={this.state.imgPath + item1.cover} alt={item.title}></img>
-										<img className={'mr40' + (item1.type === 'more' ? '' : ' none')} src={require('../assets/images/home_more.png')} alt={item.title}></img>
+										<img className={'module_img1' + (item1.type === 'more' ? ' none' : '')} src={this.state.imgPath + item1.cover} alt={item1.title}></img>
+										<img className={'module_img2' + (item1.type === 'more' ? ' none' : '')} src={require('../assets/images/paid' + item1.paid + '.png')} alt={'费用'}></img>
+										<img className={'mr40' + (item1.type === 'more' ? '' : ' none')} src={require('../assets/images/home_more.png')} alt={item1.title}></img>
 										<div className={'module_title1'}>{item1.title}</div>
 									</div>
 								)})}

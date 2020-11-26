@@ -87,6 +87,16 @@ export const duration = (start, end, type = 'day') => {
 		);
 	}
 };
+// 传数字转换成分秒显示
+export const toVideoTime = (time) => {
+	let seconds = Math.floor(time % 60);
+	let minutes = Math.floor(time / 60);
+	return (
+		(minutes < 10 ? '0' + minutes : minutes) +
+		':' +
+		(seconds < 10 ? '0' + seconds : seconds)
+	);
+};
 
 //根据时间戳算出时间
 export const durationTimes = times => {

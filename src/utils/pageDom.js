@@ -232,6 +232,7 @@ export function nextCursorLocation(domList, direction) {
 		return item.curr;
 	}),
 		current = '';
+	console.log(currents)
 	// 检查当前焦点是否只有1个
 	if (currents.length > 1) {
 		console.error('当前焦点出现2个，请检查程序是否正确');
