@@ -198,6 +198,36 @@ class Home extends Component {
 					return
 				}
 			});
+			console.log(this.props.userInfo)
+			// 我的训练
+			if(this.state.topLeftList[0].cursor.curr) {
+				if(!this.props.userInfo.id){
+					Toast.plain('请先登录',2000)
+					return
+				}
+				this.props.pushRouter({
+					name: 'myinfo',
+					pageId: this.getRandom(), 
+					params: {
+						title_id: 'train'
+					}
+				});
+				return
+			} else if(this.state.topLeftList[1].cursor.curr) {
+				if(!this.props.userInfo.id){
+					Toast.plain('请先登录',2000)
+					return
+				}
+				// 我的收藏
+				this.props.pushRouter({
+					name: 'myinfo',
+					pageId: this.getRandom(), 
+					params: {
+						title_id: 'collect'
+					}
+				});
+				return
+			}
 			// 推荐底部跳转专辑详情
 			this.state.recList.top_bottom.content.forEach(item => {
 				if (item.cursor.curr) {
@@ -525,7 +555,8 @@ class Home extends Component {
 //【焦点】需要渲染什么数据
 function mapState(state) {
 	return {
-		routerDomList: state.routerDomList
+		routerDomList: state.routerDomList,
+		userInfo: state.userInfo
 	};
 }
 

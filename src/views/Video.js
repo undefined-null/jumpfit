@@ -137,12 +137,20 @@ class Video extends Component {
 			this.state.videoRef.current.currentTime -= 20
 			$('.video_title').removeClass('video_title_none')
 			$('.progress_bar_box').removeClass('video_title_none')
+			this.state.videoRef.current.pause()
+			this.state.videoRef.current.play()
+			Toast.plain('快退20秒')
 			return false
 		}
 		// 快进
 		if(e.keyCode === 39 && !this.state.affirmDelete) {
 			this.state.videoRef.current.currentTime += 20
+			$('.video_title').removeClass('video_title_none')
 			$('.progress_bar_box').removeClass('video_title_none')
+			this.state.videoRef.current.pause()
+			this.state.videoRef.current.play()
+			Toast.plain('快进20秒')
+			
 			return false
 		}
 		if(e.keyCode === TvKeyCode.KEY_BACK) {
@@ -261,7 +269,18 @@ class Video extends Component {
 			videoLineWidth: Math.floor(this.state.videoRef.current.currentTime / this.state.videoRef.current.duration * 100),
 			videoPlay: this.state.videoRef.current.paused ? false : true,
 		})
-		Toast.destroy()
+		if(Toast.have()){
+			setTimeout(()=> {
+				Toast.destroy()
+			},500)
+		}
+		
+		// if(!this.timer && !this.state.videoRef.current.paused) {
+		// 	this.timer = setTimeout(()=>{
+		// 		$('.video_title').addClass('video_title_none');
+		// 		$('.progress_bar_box').addClass('video_title_none');
+		// 	},2000)
+		// }
 	}
 	// 播放结束
 	__onended() {

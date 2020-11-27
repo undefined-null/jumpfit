@@ -15,7 +15,7 @@ class MyInfo extends Component {
 		this.myNavRandomId = this.getRandom();
 		this.myRandomId = this.getRandom();
 		this.state = {
-			imgPath: '', // 图片路径
+			imgPath: 'http://master.dig88.cn/fit2/images/', // 图片路径
 			albumList: [
 				{
 					title: 'xiangq',
@@ -140,6 +140,7 @@ class MyInfo extends Component {
 			//是否隐藏初始化页面
 			initDataVip: false,
 			initDataNav: false,
+			noLoading: false,
 		};
 		this.handleKeyDown = this.handleKeyDown.bind(this);
 		this.getModuleCode = this.getModuleCode.bind(this);
@@ -149,13 +150,29 @@ class MyInfo extends Component {
 	// 将要加载页面dom
 	componentWillMount() {
 		console.log('进入信息页', this.props.params);
-		this.getUserVip()
+		// this.getUserVip()
+		// this.tagChose()
 	}
 	// 组件第一次渲染完成，此时dom节点已经生成
 	componentDidMount() {
 		// 获取导航
 		this.getNav()
 		document.addEventListener('keydown', this.handleKeyDown);
+		
+		if(this.props.params) {
+			// 带title_id 过来
+			if(this.props.params.title_id) {
+				console.log(this.props.params.title_id)
+				this.setState({
+					mtTitleId: this.props.params.title_id
+				})
+				setTimeout(()=>{
+					this.tagChose()
+				},100)
+			}
+		} else {
+			this.tagChose()
+		}
 	}
 	// 组件将要卸载
 	componentWillUnmount() {
@@ -178,7 +195,6 @@ class MyInfo extends Component {
 			)
 		) {
 			// 增加dom节点
-			console.log('dom')
 			this.props.deleteCompDom(this.myRandomId)
 			this.props.editeDomList([this.state.navList]);
 			this.props.editeDomList([this.state.myTitleList]);
@@ -386,7 +402,10 @@ class MyInfo extends Component {
 		this.tagChose()
 	}
 	// 导航选项点击
-	tagChose = (res) => {
+	tagChose(res) {
+		this.setState({
+			noLoading: false,
+		})
 		console.log(this.state.mtTitleId)
 		console.log(this.state.moduleId)
 		if(this.state.mtTitleId === 'vip') {
@@ -436,6 +455,7 @@ class MyInfo extends Component {
 				this.setState({
 					vipCard: this.state.vipCard,
 					isVip: true,
+					noLoading: true,
 					initDataVip: !this.state.initDataVip
 				})
 				Toast.destroy()
@@ -443,6 +463,7 @@ class MyInfo extends Component {
 				// 用户未购买会员，找模块会员
 				this.setState({
 					isVip: false,
+					noLoading: true,
 				})
 				this.getVipCard()
 			}
@@ -465,6 +486,7 @@ class MyInfo extends Component {
 				this.setState({
 					cardList: res.result,
 					imgPath: res.prefix,
+					noLoading: true,
 					initDataVip: !this.state.initDataVip
 				})
 				Toast.destroy()
@@ -489,13 +511,15 @@ class MyInfo extends Component {
 				})
 				this.setState({
 					yangxiuList: res.result,
-					isVip: true,
 					imgPath: res.prefix,
+					isVip: true,
+					noLoading: true,
 					initDataVip: !this.state.initDataVip
 				})
 			} else {
 				this.setState({
 					isVip: false,
+					noLoading: true,
 					initDataVip: !this.state.initDataVip
 				})
 			}
@@ -527,11 +551,13 @@ class MyInfo extends Component {
 				this.setState({
 					historyList: res.result,
 					imgPath: res.prefix,
+					noLoading: true,
 					initDataVip: !this.state.initDataVip
 				})
 			} else {
 				this.setState({
 					historyList: [],
+					noLoading: true,
 					initDataVip: !this.state.initDataVip
 				})
 			}
@@ -561,11 +587,13 @@ class MyInfo extends Component {
 				this.setState({
 					collectList: res.data,
 					imgPath: res.prefix,
+					noLoading: true,
 					initDataVip: !this.state.initDataVip
 				})
 			} else {
 				this.setState({
 					collectList: [],
+					noLoading: true,
 					initDataVip: !this.state.initDataVip
 				})
 			}
@@ -587,11 +615,13 @@ class MyInfo extends Component {
 				this.setState({
 					sportInfo: res.sport,
 					sportList: res.history,
+					noLoading: true,
 					initDataVip: !this.state.initDataVip
 				})
 			} else {
 				this.setState({
 					collectList: [],
+					noLoading: true,
 					initDataVip: !this.state.initDataVip
 				})
 			}
@@ -637,156 +667,159 @@ class MyInfo extends Component {
 						navCode={this.state.moduleId}
 					></NavList>
 				:''}
-				{this.state.mtTitleId === 'vip' ? 
-				<div className={'myvip_box flex-bt'}>
-					<div className={'myvip_user tc'}>
-						<img className={'myvip_user_img'} src={this.props.userInfo.avatar} alt={'用户头像'}></img>
-						<div className={'myvip_user_name mt40 fs32 line-clamp'}>{this.props.userInfo.nickname}</div>
-						<div className={'myvip_user_btn fs32' + (this.state.buttonList[0].cursor.curr ? ' curr' : '')} ref={this.state.buttonList[0].cursor.refs}>退出登录</div>
-						<img className={'myvip_user_qr' + (this.state.moduleId === 'yangxiu' ? ' none' : '')} src={require('../assets/images/wechatQr.jpg')} alt={'公众号二维码'}></img>
-					</div>
-					<div className={'myvip_card'}>
-						{this.state.navList.map((item,index)=> {
-							if(item.id === this.state.moduleId) {
-								return (
-									<div className={'myvip_card_title fs32'} key={'nav' + index}>{this.state.isVip ? '已购买' : '您还未购买'}<span className={'ml24'} style={{color:item.color}}>{item.title}{this.state.moduleId !== 'yangxiu' ? '会员卡' : '专辑'}</span></div>
-								)
-							} else {
-								return ''
-							}
-						})}
-						{this.state.isVip ? 
-							(this.state.moduleId !== 'yangxiu' ? <div className={'module_itemcard mt40'}>
-								<div className={'flex-bt'}>
-									<div className={'myvip_card_card_title fs40 line-clamp'} style={{color: this.state.moduleColor}}>{this.state.vipCard[0].title}</div>
-									{/* <div className={'myvip_card_card_btn tc fs40' + (this.state.vipCard[0].cursor.curr ? ' curr' : '')}  ref={this.state.vipCard[0].cursor.refs}>续费</div> */}
+				{this.state.noLoading ?
+					<div>
+						{this.state.mtTitleId === 'vip' ? 
+							<div className={'myvip_box flex-bt'}>
+								<div className={'myvip_user tc'}>
+									<img className={'myvip_user_img'} src={this.props.userInfo.avatar} alt={'用户头像'}></img>
+									<div className={'myvip_user_name mt40 fs32 line-clamp'}>{this.props.userInfo.nickname}</div>
+									<div className={'myvip_user_btn fs32' + (this.state.buttonList[0].cursor.curr ? ' curr' : '')} ref={this.state.buttonList[0].cursor.refs}>退出登录</div>
+									<img className={'myvip_user_qr' + (this.state.moduleId === 'yangxiu' ? ' none' : '')} src={require('../assets/images/wechatQr.jpg')} alt={'公众号二维码'}></img>
 								</div>
-								<div className={'myvip_card_card_date fs26'}>{this.state.vipCard[0].enddate}到期</div>
-							</div>
-							:
-							<div className='module_box yxpay_list flex flex-wrap' >
-								{this.state.yangxiuList.map((item,index)=>{
-									return (<div className={'module_item4 mb40 mr40 my_scale' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'yx' + index}>
-											<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
-											<div className={'module_title1'}>{item.title}</div>
-										</div>)
-								})}
-								<div className={'module_item4 mr40'}></div>
-								<div className={'module_item4 mr40'}></div>
-								<div className={'module_item4 mr40'}></div>
-							</div>
-							)
-						:
-							(this.state.moduleId !== 'yangxiu' ? 
-								<div className={'module_box mt40 flex'}>
-									{this.state.cardList.map((item,index)=> {
-										return (
-											<div className={'module_item4 card_item mr40 ' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'n' + index}>
-												<img className={'myvip_card_hotsell ' + (item.promotion === 1 ? '' : ' none')} src={require('../assets/images/hotsell.png')} alt={'热销'}></img>
-												<div className={'myvip_card_card_title fs40 line-clamp-2'}>{item.title}</div>
-												<div className={'myvip_card_card_price fs20'}>￥<span className={'myvip_card_card_price_big'}>{item.price}</span></div>
+								<div className={'myvip_card'}>
+									{this.state.navList.map((item,index)=> {
+										if(item.id === this.state.moduleId) {
+											return (
+												<div className={'myvip_card_title fs32'} key={'nav' + index}>{this.state.isVip ? '已购买' : '您还未购买'}<span className={'ml24'} style={{color:item.color}}>{item.title}{this.state.moduleId !== 'yangxiu' ? '会员卡' : '专辑'}</span></div>
+											)
+										} else {
+											return ''
+										}
+									})}
+									{this.state.isVip ? 
+										(this.state.moduleId !== 'yangxiu' ? <div className={'module_itemcard mt40'}>
+											<div className={'flex-bt'}>
+												<div className={'myvip_card_card_title fs40 line-clamp'} style={{color: this.state.moduleColor}}>{this.state.vipCard[0].title}</div>
+												{/* <div className={'myvip_card_card_btn tc fs40' + (this.state.vipCard[0].cursor.curr ? ' curr' : '')}  ref={this.state.vipCard[0].cursor.refs}>续费</div> */}
 											</div>
+											<div className={'myvip_card_card_date fs26'}>{this.state.vipCard[0].enddate}到期</div>
+										</div>
+										:
+										<div className='module_box yxpay_list flex flex-wrap' >
+											{this.state.yangxiuList.map((item,index)=>{
+												return (<div className={'module_item4 mb40 mr40 my_scale' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'yx' + index}>
+														<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
+														<div className={'module_title1'}>{item.title}</div>
+													</div>)
+											})}
+											<div className={'module_item4 mr40'}></div>
+											<div className={'module_item4 mr40'}></div>
+											<div className={'module_item4 mr40'}></div>
+										</div>
 										)
+									:
+										(this.state.moduleId !== 'yangxiu' ? 
+											<div className={'module_box mt40 flex'}>
+												{this.state.cardList.map((item,index)=> {
+													return (
+														<div className={'module_item4 card_item mr40 ' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'n' + index}>
+															<img className={'myvip_card_hotsell ' + (item.promotion === 1 ? '' : ' none')} src={require('../assets/images/hotsell.png')} alt={'热销'}></img>
+															<div className={'myvip_card_card_title fs40 line-clamp-2'}>{item.title}</div>
+															<div className={'myvip_card_card_price fs20'}>￥<span className={'myvip_card_card_price_big'}>{item.price}</span></div>
+														</div>
+													)
+												})}
+											</div>
+										:
+										 <div className={''}>
+											<div className={'myvip_user_btn mt40 fs32' + (this.state.buttonList[1].cursor.curr ? ' curr' : '')} ref={this.state.buttonList[1].cursor.refs}>立即购买</div>
+										 </div>
+										)
+									}
+									<div className={'myvip_card_desc fs26 ' + (this.state.moduleId === 'yangxiu' ? ' none' : '')}>
+										<div className={'myvip_card_desc_title fs32'}>服务说明</div>
+										<p>1.本应用仅限于三星电视，三星电视端应用与手机端应用内容不完全同步，App由艾数达科技开发运营和技术维护。</p>
+										<p>2.如果用户在使用过程中遇到任何问题都可以微信搜索【艾数达智能电视应用】关注此公众号或扫描左方二维码关注公众号进行反馈。</p>
+										<p>3.该商品为虚拟内容服务，购买后不支持退款，请谨慎购买，敬请谅解，可先体验免费课程！</p>
+									</div>
+								</div>
+							</div>
+						: '' }
+						{this.state.mtTitleId === 'train' ?
+							(this.state.historyList.length > 0 ?
+								<div className={'module_box flex-bt flex-wrap list_page'}>
+									{this.state.historyList.map((item,index)=> {
+										return(<div className={'module_item3 my_scale mt40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'his' + index}>
+											<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
+											<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + '.png')} alt={'费用'}></img>
+											<div className={'module_title1'}>{item.title}</div>
+										</div>
+									)})}
+									<div className={'empty_module module_item3'}></div>
+									<div className={'empty_module module_item3'}></div>
+								</div>
+							:
+								<div className={'list_empty'}>您还没有训练记录哦~</div>
+							)
+						: '' }
+						{this.state.mtTitleId === 'collect' ?
+							(this.state.collectList.length > 0 ?
+								<div className={'module_box flex-bt flex-wrap list_page'}>
+									{this.state.collectList.map((item,index)=> {
+										return(<div className={'module_item3 my_scale mt40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'his' + index}>
+											<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
+											<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + '.png')} alt={'费用'}></img>
+											<div className={'module_title1'}>{item.title}</div>
+										</div>
+									)})}
+									<div className={'empty_module module_item3'}></div>
+									<div className={'empty_module module_item3'}></div>
+								</div>
+							:
+								<div className={'list_empty'}>您还没有收藏记录哦~</div>
+							)
+						: '' }
+						{this.state.mtTitleId === 'data' ?
+							<div className={'sport_box flex-bt'}>
+								<div className={'sport_left'}>
+									<div className={'sport_user flex-ac'}>
+										<img className={'sport_user_img'} src={this.props.userInfo.avatar} alt={'用户头像'}></img>
+										<div className={'sport_user_name line-clamp'}>{this.props.userInfo.nickname}</div>
+									</div>
+									<div className={'sport_info flex-bt flex-wrap'}>
+										<div className={'sport_info_item'}>
+											<div className={'fs56 font-bold'}>{Math.floor(this.state.sportInfo.total_duration/(60*1000))}</div>
+											<div className={'fs26 mt24'}>总时长（分钟）</div>
+										</div>
+										<div className={'sport_info_item'}>
+											<div className={'fs56 font-bold'}>{this.state.sportInfo.total_calorie}</div>
+											<div className={'fs26 mt24'}>总消耗（千卡）</div>
+										</div>
+										<div className={'sport_info_item'}>
+											<div className={'fs56 font-bold'}>{this.state.sportInfo.total_days}</div>
+											<div className={'fs26 mt24'}>累计（天）</div>
+										</div>
+										<div className={'sport_info_item'}>
+											<div className={'fs56 font-bold'}>{this.state.sportInfo.total_num}</div>
+											<div className={'fs26 mt24'}>完成（次）</div>
+										</div>
+									</div>
+								</div>
+								<div className={'sport_right'}>
+									{this.state.sportList.map((item,index)=> {
+										if(item.content.length > 0) {
+											return (
+												<div className={'sport_list'} key={'spl' + index}>
+													<div className={'sport_list_title mt32 fs40'}>{item.date}</div>
+													{item.content.map((item1,index1)=> {
+														return(
+														<div className={'sport_list_item flex-bt flex-ac mt24 fs32 ' + (item1.cursor.curr ? ' curr' : '')} ref={item1.cursor.refs} key={'spl' + index + '' + index1}>
+															<div>{item1.title}</div>
+															<div>{Math.floor(item1.played / (60*1000))}分{Math.floor(item1.played / 1000) % 60}秒</div>
+														</div>
+													)})}
+												</div>
+											)
+										} else {
+											return ''
+										}
 									})}
 								</div>
-							:
-							 <div className={''}>
-								<div className={'myvip_user_btn mt40 fs32' + (this.state.buttonList[1].cursor.curr ? ' curr' : '')} ref={this.state.buttonList[1].cursor.refs}>立即购买</div>
-							 </div>
-							)
-						}
-						<div className={'myvip_card_desc fs26 ' + (this.state.moduleId === 'yangxiu' ? ' none' : '')}>
-							<div className={'myvip_card_desc_title fs32'}>服务说明</div>
-							<p>1.本应用仅限于三星电视，三星电视端应用与手机端应用内容不完全同步，App由艾数达科技开发运营和技术维护。</p>
-							<p>2.如果用户在使用过程中遇到任何问题都可以微信搜索【艾数达智能电视应用】关注此公众号或扫描左方二维码关注公众号进行反馈。</p>
-							<p>3.该商品为虚拟内容服务，购买后不支持退款，请谨慎购买，敬请谅解，可先体验免费课程！</p>
-						</div>
-					</div>
-				</div>
-				: '' }
-				{this.state.mtTitleId === 'train' ?
-					(this.state.historyList.length > 0 ?
-						<div className={'module_box flex-bt flex-wrap list_page'}>
-							{this.state.historyList.map((item,index)=> {
-								return(<div className={'module_item3 my_scale mt40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'his' + index}>
-									<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
-									<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + '.png')} alt={'费用'}></img>
-									<div className={'module_title1'}>{item.title}</div>
-								</div>
-							)})}
-							<div className={'empty_module module_item3'}></div>
-							<div className={'empty_module module_item3'}></div>
-						</div>
-					:
-						<div className={'list_empty'}>您还没有训练记录哦~</div>
-					)
-				: '' }
-				{this.state.mtTitleId === 'collect' ?
-					(this.state.collectList.length > 0 ?
-						<div className={'module_box flex-bt flex-wrap list_page'}>
-							{this.state.collectList.map((item,index)=> {
-								return(<div className={'module_item3 my_scale mt40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'his' + index}>
-									<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
-									<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + '.png')} alt={'费用'}></img>
-									<div className={'module_title1'}>{item.title}</div>
-								</div>
-							)})}
-							<div className={'empty_module module_item3'}></div>
-							<div className={'empty_module module_item3'}></div>
-						</div>
-					:
-						<div className={'list_empty'}>您还没有收藏记录哦~</div>
-					)
-				: '' }
-				{this.state.mtTitleId === 'data' ?
-					<div className={'sport_box flex-bt'}>
-						<div className={'sport_left'}>
-							<div className={'sport_user flex-ac'}>
-								<img className={'sport_user_img'} src={this.props.userInfo.avatar} alt={'用户头像'}></img>
-								<div className={'sport_user_name line-clamp'}>{this.props.userInfo.nickname}</div>
 							</div>
-							<div className={'sport_info flex-bt flex-wrap'}>
-								<div className={'sport_info_item'}>
-									<div className={'fs56 font-bold'}>{Math.floor(this.state.sportInfo.total_duration/(60*1000))}</div>
-									<div className={'fs26 mt24'}>总时长（分钟）</div>
-								</div>
-								<div className={'sport_info_item'}>
-									<div className={'fs56 font-bold'}>{this.state.sportInfo.total_calorie}</div>
-									<div className={'fs26 mt24'}>总消耗（千卡）</div>
-								</div>
-								<div className={'sport_info_item'}>
-									<div className={'fs56 font-bold'}>{this.state.sportInfo.total_days}</div>
-									<div className={'fs26 mt24'}>累计（天）</div>
-								</div>
-								<div className={'sport_info_item'}>
-									<div className={'fs56 font-bold'}>{this.state.sportInfo.total_num}</div>
-									<div className={'fs26 mt24'}>完成（次）</div>
-								</div>
-							</div>
-						</div>
-						<div className={'sport_right'}>
-							{this.state.sportList.map((item,index)=> {
-								if(item.content.length > 0) {
-									return (
-										<div className={'sport_list'} key={'spl' + index}>
-											<div className={'sport_list_title mt32 fs40'}>{item.date}</div>
-											{item.content.map((item1,index1)=> {
-												return(
-												<div className={'sport_list_item flex-bt flex-ac mt24 fs32 ' + (item1.cursor.curr ? ' curr' : '')} ref={item1.cursor.refs} key={'spl' + index + '' + index1}>
-													<div>{item1.title}</div>
-													<div>{Math.floor(item1.played / (60*1000))}分{Math.floor(item1.played / 1000) % 60}秒</div>
-												</div>
-											)})}
-										</div>
-									)
-								} else {
-									return ''
-								}
-							})}
-						</div>
+						: '' }
 					</div>
-				: '' }
-				
+				: ''}
 				{this.state.affirmDelete ? (
 					<Popup
 						affirmCallback={this.deleteAllList.bind(this)}
