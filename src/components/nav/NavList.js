@@ -76,7 +76,7 @@ class NavList extends React.Component {
 	//页面渲染完成之后
 	componentDidMount() {
 		// 增加dom节点
-		this.props.editeDomList([this.props.navList]);
+		// this.props.editeDomList([this.props.navList]);
 		document.addEventListener('keydown', this.handleKeyDown);
 	}
 	// 更新完毕
@@ -89,9 +89,9 @@ class NavList extends React.Component {
 			//当前页面已经是展示的页面
 			this.ifUpdate = false;
 			//更新完毕后，删除dom节点
-			this.props.deleteCompDom(this.compId);
-			// 增加dom节点
-			this.props.editeDomList([this.props.navList]);
+			// this.props.deleteCompDom(this.compId);
+			// // 增加dom节点
+			// this.props.editeDomList([this.props.navList]);
 		}
 	}
 	// 组件将要卸载
@@ -124,7 +124,7 @@ class NavList extends React.Component {
 	render() {
 		return (<div className={'nav-list flex-ac flex-bt'} ref={this.state.homeListBox}>
 			{this.props.navList.map((item, index) => {
-				return (<div className={'nav-item flex-ac' + (item.cursor.curr ? ' curr' : '') + (this.state.navCode === item.id ? ' on' : '')}
+				return (<div className={'nav-item flex-ac' + (item.cursor.curr ? ' curr' : '') + (this.props.navCode === item.id ? ' on' : '')}
 					ref={item.cursor.refs}
 					key={item.id}
 				>

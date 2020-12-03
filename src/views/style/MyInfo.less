@@ -1,7 +1,7 @@
 .myinfo-page {
 	overflow: hidden;
 	.empty_56 {
-		height: 56px;
+		height: 16px;
 		opacity: 0;
 	}
 	.curr {
@@ -9,19 +9,24 @@
 		border-color: #FFFFFF!important;
 		box-shadow: 0 0 3px 1px rgba(255, 255, 255, 0.5);
 		&.myinfo_title {
-			-webkit-transform: scale(1.2);
-			transform: scale(1.2);
+			// transform: scale(1.2);
+			// -webkit-transform: scale(1.2);
+			font-size: 56px;
 		}
 		&.my_scale {
-			-webkit-transform: scale(1.05);
 			transform: scale(1.05);
+			-webkit-transform: scale(1.05);
 		}
 	}
 	.myinfo_title {
 		border-color: transparent!important;
 		box-shadow: none;
 		font-size: 46px;
-		padding-right: 72px;
+		text-align: center;
+		height: 130px;
+		line-height: 130px;
+		width: 264px;
+		transition: all linear 0.1s;
 		&.on {
 			color: #D4CB4C;
 		}
@@ -126,6 +131,12 @@
 		text-align: center;
 		margin: 300px auto;
 		font-size: 32px;
+	}
+	.list_page {
+		padding: 20px 20px;
+		margin: 20px -20px;
+		height: 820px;
+		overflow: hidden;
 	}
 	.sport_box {
 		.sport_left {

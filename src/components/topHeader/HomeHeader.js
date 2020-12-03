@@ -51,6 +51,10 @@ class HomeHeader extends React.Component {
 	}
 	// 更新完毕
 	componentDidUpdate(prevProps, prevState) {
+		
+		// if (prevProps.userInfo.account_id !== this.props.userInfo.account_id) {
+		// 	this.ifUpdate = true;
+		// }
 		if (prevProps.userInfo.id !== this.props.userInfo.id) {
 			this.ifUpdate = true;
 		}
@@ -64,6 +68,9 @@ class HomeHeader extends React.Component {
 			// // 增加dom节点
 			// this.props.editeDomList([this.state.buttonList]);
 		}
+		// console.log('顶部更新')
+		this.props.deleteCompDom(this.compId);
+		this.props.editeDomList([this.state.buttonList]);
 	}
 	// 组件将要卸载
 	componentWillUnmount() {
@@ -101,7 +108,10 @@ class HomeHeader extends React.Component {
 				if(this.props.userInfo.id) {
 					this.props.pushRouter({
 						name: 'myinfo',
-						pageId: this.getRandom(),
+						pageId: this.getRandom(), 
+						params: {
+							title_id: 'data'
+						}
 					});
 					
 				} else {
@@ -130,7 +140,7 @@ class HomeHeader extends React.Component {
 	render() {
 		return (
 			<div className={'home-header flex-ac'}>
-				<img className={'logo'} alt="logo" src={require('../../assets/images/home_logo.png')}></img>
+				<img className={'logo'} alt="logo" src={require('../../assets/images/logohome.png')}></img>
 				<div className={'flex-1'}></div>
 				{/* 搜索框 */}
 				<div

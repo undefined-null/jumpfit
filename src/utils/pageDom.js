@@ -10,7 +10,7 @@ import {
 } from '../redux/actions/routerDom';
 import Toast from '../components/toast/Index';
 import { setUserInfo, removeUserInfo, } from '../redux/actions/user';
-import { setGoodsList } from '../redux/actions/goods';
+import { setNavList } from '../redux/actions/nav';
 import { changeSongNum } from '../redux/actions/index';
 
 /**
@@ -35,7 +35,8 @@ export function setCursorObj(
 	compRandom,
 	level = 'a',
 	curr = false,
-	direction = { left: 'yes', right: 'yes', top: 'yes', bottom: 'yes' }
+	direction = { left: 'yes', right: 'yes', top: 'yes', bottom: 'yes' },
+	resetDom = false,
 ) {
 	//判断传入的方向对不对
 	//下一步移动的动作， yes（可以移动，但是没有了就不移动），no（不可以移动），right(没有左边了就从上一层的右开始移动)
@@ -61,7 +62,8 @@ export function setCursorObj(
 		curr: curr,
 		level: level,
 		refs: React.createRef(),
-		direction: direction
+		direction: direction,
+		resetDom: resetDom,
 	};
 }
 
@@ -199,8 +201,8 @@ export function mapDispatch(dispatch, props) {
 		setUserInfo: data => dispatch(setUserInfo(data)),
 		// 将用户信息删除
 		removeUserInfo: data => dispatch(removeUserInfo()),
-		// 获取会员购买列表
-		setGoodsList: data => dispatch(setGoodsList(data)),
+		// 获取导航列表
+		setNavList: data => dispatch(setNavList(data)),
 		// 修改已选歌曲的个数
 		changeSongNum: num => dispatch(changeSongNum(num))
 	};
@@ -232,7 +234,8 @@ export function nextCursorLocation(domList, direction) {
 		return item.curr;
 	}),
 		current = '';
-	console.log(currents)
+	// console.log('所有焦点列表',currents)
+	// console.log('当前焦点',current)
 	// 检查当前焦点是否只有1个
 	if (currents.length > 1) {
 		console.error('当前焦点出现2个，请检查程序是否正确');
@@ -693,6 +696,16 @@ export function nextCursorLocation(domList, direction) {
 						return false;
 						}
 					})
+				}
+				// 查找记忆焦点
+				let correctDom1 = correctDom.filter(item => {
+					return item.resetDom === true
+				})
+				console.log('正常焦点列表',correctDom)
+				console.log('记忆焦点列表',correctDom1)
+				console.log('当前焦点',current)
+				if(correctDom1.length > 0) {
+					correctDom = correctDom1
 				}
 				// console.log(direction + '符合条件的元素，进行最优排序', correctDom.length, [...correctDom]);
 				correctDom = correctDom.sort((a, b) => {

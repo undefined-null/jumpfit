@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import './style/App.less';
 import Home from './Home';
 import ExitApp from './ExitApp';
+import Logout from './Logout';
 import ClassList from './ClassList';
 import BrokenNetwork from './BrokenNetwork';
 import Detail from './Detail';
@@ -72,6 +73,7 @@ class App extends Component {
 					if (
 						(this.props.router[this.props.router.length - 1].name === 'exitApp'
 							|| this.props.router[this.props.router.length - 1].name === 'login'
+							|| this.props.router[this.props.router.length - 1].name === 'logout'
 							|| this.props.router[this.props.router.length - 1].name === 'orderqr'
 						) &&
 						index === this.props.router.length - 2
@@ -116,6 +118,11 @@ class App extends Component {
 						return (
 							<OrderQr display={display} pageId={item.pageId} backParams={item.backParams} key={index} params={item.params}></OrderQr>
 						);
+					} else if (item.name === 'logout') {
+						// 退出登录提醒页面
+						return (
+							<Logout display={display} pageId={item.pageId} backParams={item.backParams} key={index} params={item.params}></Logout>
+						);
 					} else if (item.name === 'exitApp') {
 						// 退出程序提醒页面
 						return (
@@ -141,7 +148,7 @@ class App extends Component {
 	}
 	//监听键盘事件
 	handleKeyDown(e) {
-		console.log('点击键盘' + e.keyCode);
+		// console.log('点击键盘' + e.keyCode);
 		switch (e.keyCode) {
 			case TvKeyCode.KEY_LEFT:
 				//方向左边
@@ -166,10 +173,10 @@ class App extends Component {
 			case TvKeyCode.KEY_BACK:
 				//返回按钮
 				// console.log('返回上页');
-				let returnArray = ['video'];
+				let returnArray = ['video','myinfo'];
 				if (
 					this.props.router.length > 1 &&
-					this.props.router[this.props.router.length - 1].name !== 'brokenNetwork'
+					this.props.router[this.props.router.length - 1].name !== 'myinfo1'
 				) {
 					if (returnArray.indexOf(this.props.router[this.props.router.length - 1].name) >= 0) {
 						// 如果是在购买会员页面，返回上一页失效，用页面内的返回上一页
@@ -181,7 +188,7 @@ class App extends Component {
 				} else {
 					// 正在首页，暂时无法返回
 					// alert('正在首页，暂时无法返回，后期加上退出操作');
-					this.props.pushRouter({ name: 'exitApp', pageId: getRandom() });
+					// this.props.pushRouter({ name: 'exitApp', pageId: getRandom() });
 				}
 				break;
 			default:

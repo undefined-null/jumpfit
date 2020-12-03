@@ -10,7 +10,7 @@ import Toast from '../components/toast/Index';
 // create an axios instance
 const service = axios.create({
 	baseURL: process.env.REACT_APP_ENV === 'dev' ? '' : process.env.REACT_APP_API,
-	// baseURL: 'http://api.dig88.cn/jumpfit/public/',
+	// baseURL: 'http://api.dig88.cn/changba/public/decrypt',
 	// baseURL: '',
 	withCredentials: true, // send cookies when cross-domain requests
 	timeout: 15000, // request timeout
@@ -102,6 +102,8 @@ function apiAxios(method, url, params) {
 			for (let key in params) {
 				tempArr.push(key + '=' + params[key]);
 			}
+			let imath = Math.floor(Math.random()*100000000)
+			tempArr.push('i=' + imath);
 			addUrl = tempArr.join('&');
 			addUrl = addUrl.length ? '?' + addUrl : '';
 		}

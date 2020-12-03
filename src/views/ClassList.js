@@ -140,7 +140,7 @@ class ClassList extends Component {
 					{this.state.albumList.map((item,index)=>{
 						return(<div className={'mt40 module_item3 ' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'d' + index}>
 							<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
-							<img className={'module_img2'} src={require('../assets/images/paid' + (item.paid === 1 ? 1 : 0) + '.png')} alt={'费用'}></img>
+							<img className={'module_img2'} src={require('../assets/images/paid' + (item.paid === 1 ? 1 : 0) + (item.moduleid === 'yangxiu' ? 0 : '') + '.png')} alt={'费用'}></img>
 							<div className={'module_title1'}>{item.title}</div>
 						</div>)
 					})}

@@ -93,9 +93,10 @@ class ToastBox extends Component {
 					} else if (notice.type === 'plain') {
 						// 项目设计的弹出loading
 						return (
-							<div className="toast_box" key={notice.key}>
+							<div className="toast_plain flex-ajc" key={notice.key}>
 								<div className="toast_text">{notice.content}</div>
-							</div>						);
+							</div>
+							);
 					} else {
 						// 默认的样式
 						return (

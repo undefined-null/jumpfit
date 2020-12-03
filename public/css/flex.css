@@ -82,6 +82,6 @@
 	flex: 1;
 	-webkit-box-flex: 1;
 	-moz-flex-grow: 1;
-	-webkit-flex-grow: 1;
 	flex-grow: 1;
+	-webkit-flex-grow: 1;
 }

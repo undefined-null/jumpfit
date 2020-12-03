@@ -17,7 +17,7 @@ class Home extends Component {
 		this.homeRandomId = this.getRandom();
 		this.homeModuleId = this.getRandom();
 		this.state = {
-			moduleId: 'home',
+			moduleId: '',
 			navList: [],// 导航列表
 			classList: [], // 分类列表
 			recList: { // 推荐
@@ -129,6 +129,7 @@ class Home extends Component {
 		) {
 			// console.log('home初始化完成，开始添加节点', prevProps, prevState);
 			// 增加dom节点
+			this.props.editeDomList([this.state.navList]);
 			this.props.editeDomList([this.state.recList.top_up.content]);
 			this.props.editeDomList([this.state.recList.top_right.content]);
 			this.props.editeDomList([this.state.recList.top_bottom.content]);
@@ -138,11 +139,12 @@ class Home extends Component {
 			this.props.editeDomList([this.state.moduleList]);
 			//将dom节点收集后，才设置当前节点
 			this.props.setCursorDom(this.state.navList[0].cursor.random);
-		}
+		} else 
 		
 		// 重新获取模块后执行
 		if(this.state.initDataRefresh !== prevState.initDataRefresh) {
 			this.props.deleteCompDom(this.homeModuleId);
+			this.props.editeDomList([this.state.navList]);
 			this.props.editeDomList([this.state.recList.top_up.content]);
 			this.props.editeDomList([this.state.recList.top_right.content]);
 			this.props.editeDomList([this.state.recList.top_bottom.content]);
@@ -162,6 +164,16 @@ class Home extends Component {
 		if(currDom.length > 0 && $('.home-page').is(':visible')) {
 			currBox.scrollTop(currBox.scrollTop() + currDom.eq(currDom.length - 1).offset().top - 334)
 		}
+		// 导航移动确认（遥控器无需确认）
+		this.state.navList.forEach(item => {
+			if(item.cursor.curr) {
+				this.state.navList.forEach(item1 => {
+					item1.cursor.resetDom = false
+				})
+				item.cursor.resetDom = true
+				this.getClassList(item.id)
+			}
+		})
 	}
 	//监听键盘事件
 	handleKeyDown(e) {
@@ -198,7 +210,6 @@ class Home extends Component {
 					return
 				}
 			});
-			console.log(this.props.userInfo)
 			// 我的训练
 			if(this.state.topLeftList[0].cursor.curr) {
 				if(!this.props.userInfo.id){
@@ -298,6 +309,30 @@ class Home extends Component {
 					return
 				}
 			});
+		} else if(e.keyCode === TvKeyCode.KEY_BACK) {
+			// 判断焦点
+			let exit = false
+			let module_index = 0
+			console.log(this.state.navList)
+			console.log(this.state.moduleId)
+			this.state.navList.forEach((item,index) => {
+				if(item.cursor.curr) {
+					exit = true
+				}
+				if(item.id === this.state.moduleId) {
+					module_index = index
+				}
+			})
+			// 退出APP
+			if(exit) {
+				console.log('退出APP')
+				setTimeout(()=> {
+					this.props.pushRouter({ name: 'exitApp', pageId: this.getRandom() });
+				},5)
+			} else {
+				this.props.setCursorDom(this.state.navList[module_index].cursor.random);
+				$('.home-page').scrollTop(0)
+			}
 		}
 	}
 	// 获取导航
@@ -305,18 +340,20 @@ class Home extends Component {
 		try {
 			let res = await homeModuleApi()
 			res.data.forEach((item,index) => {
-				item.cursor = this.setCursorObj(this.props.pageId, this.homeRandomId, 'b');
+				item.prefix = res.prefix
+				item.cursor = this.setCursorObj(this.props.pageId, this.homeModuleId, 'b');
 				if(index === res.length-1){
-					item.cursor = this.setCursorObj(this.props.pageId, this.homeRandomId, 'b',null,{
+					item.cursor = this.setCursorObj(this.props.pageId, this.homeModuleId, 'b',null,{
 						right: 'no'
 					});
 				}
 				if(index === 0) {
-					item.cursor = this.setCursorObj(this.props.pageId, this.homeRandomId, 'b',null,{
+					item.cursor = this.setCursorObj(this.props.pageId, this.homeModuleId, 'b',null,{
 						left: 'no'
-					});
+					},true);
 				}
 			});
+			this.props.setNavList(res.data)
 			this.setState({
 				navList: res.data,
 				navImgpath: res.prefix,
@@ -329,6 +366,12 @@ class Home extends Component {
 	
 	// 获取模块分类列表
 	async getClassList(id) {
+		if(id === this.state.moduleId) return
+		
+		this.setState({
+			moduleId: id,
+			navList: this.state.navList
+		})
 		Toast.empty()
 		try {
 			let res = await classHomeApi({moduleid:id})
@@ -337,7 +380,6 @@ class Home extends Component {
 			});
 			this.setState({
 				classList: res,
-				moduleId: id,
 			})
 			this.getHomeIndex(id)
 		} catch(e) {
@@ -478,7 +520,7 @@ class Home extends Component {
 							if(this.state.moduleId === 'home') {
 							return (<div className={'module_item3 mt40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'tu' + index}>
 									<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
-									<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + '.png')} alt={'费用'}></img>
+									<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + (item.moduleid === 'yangxiu' ? 0 : '') + '.png')} alt={'费用'}></img>
 									<div className={'module_title1'}>{item.title}</div>
 								</div>)
 						}else {
@@ -494,7 +536,7 @@ class Home extends Component {
 							if(this.state.moduleId === 'home') {
 							return (<div className={'module_item4 mt40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'tr' + index}>
 									<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
-									<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + '.png')} alt={'费用'}></img>
+									<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + (item.moduleid === 'yangxiu' ? 0 : '') + '.png')} alt={'费用'}></img>
 									<div className={'module_title1'}>{item.title}</div>
 								</div>)
 						}else{return ''}})}
@@ -504,7 +546,7 @@ class Home extends Component {
 							if(this.state.moduleId === 'home') {
 							return (<div className={'module_item3 mt40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'tb' + index}>
 									<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
-									<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + '.png')} alt={'费用'}></img>
+									<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + (item.moduleid === 'yangxiu' ? 0 : '') + '.png')} alt={'费用'}></img>
 									<div className={'module_title1'}>{item.title}</div>
 								</div>)
 						}else{return ''}})}
@@ -514,7 +556,7 @@ class Home extends Component {
 							if(this.state.moduleId === 'yangxiu') {
 							return (<div className={'module_item3 mt40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'yx' + index}>
 									<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
-									<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + '.png')} alt={'费用'}></img>
+									<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + (item.moduleid === 'yangxiu' ? 0 : '') + '.png')} alt={'费用'}></img>
 									<div className={'module_title1'}>{item.title}</div>
 								</div>)
 						}else{return ''}})}
@@ -539,7 +581,7 @@ class Home extends Component {
 										+ (item1.cursor.curr ? ' curr' : '')}
 										ref={item1.cursor.refs} key={'md' + index + '' + index1}>
 										<img className={'module_img1' + (item1.type === 'more' ? ' none' : '')} src={this.state.imgPath + item1.cover} alt={item1.title}></img>
-										<img className={'module_img2' + (item1.type === 'more' ? ' none' : '')} src={require('../assets/images/paid' + item1.paid + '.png')} alt={'费用'}></img>
+										<img className={'module_img2' + (item1.type === 'more' ? ' none' : '')} src={require('../assets/images/paid' + item1.paid + (item1.moduleid === 'yangxiu' ? 0 : '') + '.png')} alt={'费用'}></img>
 										<img className={'mr40' + (item1.type === 'more' ? '' : ' none')} src={require('../assets/images/home_more.png')} alt={item1.title}></img>
 										<div className={'module_title1'}>{item1.title}</div>
 									</div>

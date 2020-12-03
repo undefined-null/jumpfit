@@ -12,10 +12,12 @@ class Detail extends Component {
 		super(props);
 		//设置模块首页组件的随机标识
 		this.detailRandomId = this.getRandom();
+		this.detailBtnRandomId = this.getRandom();
 		this.state = {
 			moduleId: '',// 模块ID
 			detailId: '',// 详情ID
 			imgPath: '', // 图片路径
+			icon: 'http://master.dig88.cn/fit2/images/jump_fit.png',
 			album: { // 专辑详情
 				bigimage: "/fit/basis_f_6.png",
 				calorie: "39",
@@ -43,7 +45,7 @@ class Detail extends Component {
 				{
 					title: 'xiangq',
 					cover: '/codoon/payNO.png',
-					cursor: this.setCursorObj(this.props.pageId, this.detailRandomId, 'c')
+					cursor: this.setCursorObj(this.props.pageId, this.detailRandomId, 'b')
 				}
 			],
 			buttonList: [ // 按钮列表
@@ -52,17 +54,20 @@ class Detail extends Component {
 					price: 0,
 					playable: 0,
 					type: 'buy',
-					cursor: this.setCursorObj(this.props.pageId, this.detailRandomId, 'b',null,{left:'no'})
+					cursor: this.setCursorObj(this.props.pageId, this.detailBtnRandomId, 'a',null,{left:'no'})
 				},
 				{
 					title: '播放',
-					cursor: this.setCursorObj(this.props.pageId, this.detailRandomId, 'b')
+					type: 'play',
+					cursor: this.setCursorObj(this.props.pageId, this.detailBtnRandomId, 'a',null,{},true)
 				},
 				{
 					title: '收藏',
-					cursor: this.setCursorObj(this.props.pageId, this.detailRandomId, 'b',null,{right:'no'})
+					type: 'collect',
+					cursor: this.setCursorObj(this.props.pageId, this.detailBtnRandomId, 'a',null,{right:'no'})
 				}
 			],
+			buttonType: 'play',
 			intro: [{
 				intro: '说明',
 				cursor: this.setCursorObj(this.props.pageId, this.detailRandomId, 'a',null,{right:'no',left:'no',top:'no'})
@@ -74,7 +79,7 @@ class Detail extends Component {
 						{
 							title:'推荐详情',
 							cover: '/codoon/payNO.png',
-							cursor: this.setCursorObj(this.props.pageId, this.detailRandomId, 'd')
+							cursor: this.setCursorObj(this.props.pageId, this.detailRandomId, 'c')
 						},
 					]
 				}
@@ -82,13 +87,16 @@ class Detail extends Component {
 			//是否隐藏初始化页面
 			initDataDetail: false,
 			initDataRefresh: false, // 重新渲染页面
+			moveCurr: true,
 		};
 		this.handleKeyDown = this.handleKeyDown.bind(this);
+		this.changeBtn = this.changeBtn.bind(this);
 	}
 
 	// 将要加载页面dom
 	componentWillMount() {
 		console.log('带着detail_id', this.props.params);
+		console.log(this.props.navList)
 		this.setState({
 			detailId: this.props.params.detail_id,
 			moduleId: this.props.params.module_id
@@ -97,8 +105,18 @@ class Detail extends Component {
 	}
 	// 组件第一次渲染完成，此时dom节点已经生成
 	componentDidMount() {
+		console.log(this.props.navList)
+		
+		this.props.navList.forEach(item => {
+			if(item.id === this.props.params.module_id) {
+				this.setState({
+					icon: item.prefix + item.cover
+				})
+			}
+		})
 		// 获取导航
 		document.addEventListener('keydown', this.handleKeyDown);
+		this.props.editeDomList([]);
 	}
 	// 组件将要卸载
 	componentWillUnmount() {
@@ -136,37 +154,50 @@ class Detail extends Component {
 		// 重新获取模块后执行
 		if(this.state.initDataRefresh !== prevState.initDataRefresh) {
 			this.props.deleteCompDom(this.detailRandomId);
+			this.props.deleteCompDom(this.detailBtnRandomId);
 			this.props.editeDomList([this.state.detailList]);
 			this.props.editeDomList([this.state.buttonList]);
 			this.props.editeDomList([this.state.recList]);
 			this.props.editeDomList([this.state.intro]);
 			this.props.setCursorDom(this.state.buttonList[1].cursor.random);
 		} else {
-		// 滚动元素盒子
-		let currBox = $('.detail-page')
-		// 当前焦点元素
-		let currDom = $('.detail-page .curr')
-		// 如果当前页面存在焦点，移动滚动条
-		if(currDom.length > 0 && $('.detail-page').is(':visible')) {
-			currBox.scrollTop(currBox.scrollTop() + currDom.offset().top - 740)
-			let currBox1 = $('.detail-page .detailmodulebox')
-			let currDom1 = $('.detail-page .detailmodulebox .curr')
-			if(currDom1.length > 0) {
-				currBox1.scrollLeft(currBox1.scrollLeft() + currDom1.offset().left - 670)
-			}
-			this.state.recList.forEach((item,index)=>{
-				let currBox2 = $('.detail-page .recmodulebox' + index)
-				let currDom2 = $('.detail-page .recmodulebox' + index + ' .curr')
-				if(currDom2.length > 0) {
-					console.log(currDom2.offset().left)
-					currBox2.scrollLeft(currBox2.scrollLeft() + currDom2.offset().left - 670)
+			// 滚动元素盒子
+			let currBox = $('.detail-page')
+			// 当前焦点元素
+			let currDom = $('.detail-page .curr')
+			// 如果当前页面存在焦点，移动滚动条
+			if(currDom.length > 0 && $('.detail-page').is(':visible')) {
+				currBox.scrollTop(currBox.scrollTop() + currDom.offset().top - 740)
+				let currBox1 = $('.detail-page .detailmodulebox')
+				let currDom1 = $('.detail-page .detailmodulebox .curr')
+				if(currDom1.length > 0) {
+					currBox1.scrollLeft(currBox1.scrollLeft() + currDom1.offset().left - 670)
 				}
-			})
-			this.props.deleteCompDom(this.detailRandomId);
-			this.props.editeDomList([this.state.detailList]);
-			this.props.editeDomList([this.state.buttonList]);
-			this.props.editeDomList([this.state.recList]);
-			this.props.editeDomList([this.state.intro]);
+				this.state.recList.forEach((item,index)=>{
+					let currBox2 = $('.detail-page .recmodulebox' + index)
+					let currDom2 = $('.detail-page .recmodulebox' + index + ' .curr')
+					if(currDom2.length > 0) {
+						console.log(currDom2.offset().left)
+						currBox2.scrollLeft(currBox2.scrollLeft() + currDom2.offset().left - 670)
+					}
+				})
+				
+				this.state.buttonList.forEach(item => {
+					if(item.cursor.curr) {
+						this.state.buttonList.forEach(item1 => {
+							item1.cursor.resetDom = false
+						});
+						item.cursor.resetDom = true;
+						console.log('changeBtn')
+						this.changeBtn(item.type)
+					}
+				})
+				this.props.deleteCompDom(this.detailRandomId);
+				this.props.deleteCompDom(this.detailBtnRandomId);
+				this.props.editeDomList([this.state.detailList]);
+				this.props.editeDomList([this.state.buttonList]);
+				this.props.editeDomList([this.state.recList]);
+				this.props.editeDomList([this.state.intro]);
 			}
 		}
 	}
@@ -196,6 +227,18 @@ class Detail extends Component {
 							album_id: this.state.album.id,
 						}
 					});
+				} else {
+					if(this.props.userInfo.id) {
+						this.props.pushRouter({
+							name: 'myinfo',
+							pageId: this.getRandom(),
+							params: {
+								module_id: this.state.album.moduleid,
+							}
+						});
+					} else {
+						Toast.plain('请先登录')
+					}
 				}
 			}
 			// 播放点击
@@ -256,6 +299,15 @@ class Detail extends Component {
 			
 		}
 	}
+	changeBtn(type) {
+		if(type === this.state.buttonType) return
+		setTimeout(()=>{
+			this.setState({
+				buttonList:this.state.buttonList,
+				buttonType: type
+			});
+		},1);
+	}
 	// 收藏
 	async updataCollect() {
 		if(!this.props.userInfo.id) {
@@ -291,7 +343,7 @@ class Detail extends Component {
 					item.cursor = this.setCursorObj(this.props.pageId, this.detailRandomId, 'c',null,{
 						right: 'no',
 						left:'no',
-					});
+					},);
 				} else if(index === res.contentlist.length-1 ) {
 					item.cursor = this.setCursorObj(this.props.pageId, this.detailRandomId, 'c',null,{
 						right: 'no'
@@ -299,7 +351,7 @@ class Detail extends Component {
 				} else if(index === 0) {
 					item.cursor = this.setCursorObj(this.props.pageId, this.detailRandomId, 'c',null,{
 						left: 'no'
-					});
+					},);
 				}
 			})
 			res.recommend.forEach((item,index)=> {
@@ -309,7 +361,7 @@ class Detail extends Component {
 						item1.cursor = this.setCursorObj(this.props.pageId, this.detailRandomId, 'd',null,{
 							right: 'no',
 							left:'no',
-						});
+						},);
 					} else if(index1 === item.album.length-1 ) {
 						item1.cursor = this.setCursorObj(this.props.pageId, this.detailRandomId, 'd',null,{
 							right: 'no'
@@ -317,7 +369,7 @@ class Detail extends Component {
 					} else if(index1 === 0) {
 						item1.cursor = this.setCursorObj(this.props.pageId, this.detailRandomId, 'd',null,{
 							left: 'no'
-						});
+						},);
 					}
 				})
 			})
@@ -342,7 +394,12 @@ class Detail extends Component {
 	render() {
 		if ( !this.state.initDataDetail) {
 			//没有加载出来数据的时候，限制初始化页面
-			return <Init></Init>;
+			// return <Init></Init>;
+			return (
+				<div className={'detail-page flex-ajc'}>
+					<img className={'logo'} alt="logo" src={this.state.icon}></img>
+				</div>
+			)
 		}
 		return (
 			<div className={'detail-page ' + this.props.display}>
@@ -361,22 +418,22 @@ class Detail extends Component {
 						<div className={'detail_intro mt16 fs32' + (this.state.intro[0].cursor.curr ? ' curr' : '')} ref={this.state.intro[0].cursor.refs}>
 							<div className={'line-clamp-3'}>{this.state.intro[0].intro}</div>
 						</div>
-						<div className={'detail_btnbox flex-bt fs32'}>
+						<div className={'detail_btnbox flex-ac fs32'}>
 							{this.state.album.moduleid === 'yangxiu' ?
-								<div className={'detail_btnitem flex-ajc' + (this.state.buttonList[0].cursor.curr ? ' curr' : '') + (!this.state.album.isship ? '' : ' none')}
+								<div className={'detail_btnitem mr40 flex-ajc' + (this.state.buttonList[0].cursor.curr ? ' curr' : '') + (!this.state.album.isship ? '' : ' none')}
 									ref={!this.state.album.isship ? this.state.buttonList[0].cursor.refs : ''}>
 									<div className={'tc'}><div className={'mb24'} style={{color:this.state.album.moduleidcolor}}>{this.state.album.price} 元</div>购买专辑</div>
 								</div>
 							:
-								<div className={'detail_btnitem flex-ajc' + (this.state.buttonList[0].cursor.curr ? ' curr' : '') + (!this.state.album.isship ? '' : ' none')}
+								<div className={'detail_btnitem mr40 flex-ajc' + (this.state.buttonList[0].cursor.curr ? ' curr' : '') + (!this.state.album.isship ? '' : ' none')}
 									ref={!this.state.album.isship ? this.state.buttonList[0].cursor.refs : ''}>
 									购买 {this.state.album.moduletitle} 会员
 								</div>
 							}
-							<div className={'detail_btnitem flex-ajc' + (this.state.buttonList[1].cursor.curr ? ' curr' : '')} ref={this.state.buttonList[1].cursor.refs}>
+							<div className={'detail_btnitem mr40 flex-ajc' + (this.state.buttonList[1].cursor.curr ? ' curr' : '')} ref={this.state.buttonList[1].cursor.refs}>
 								<img className={'detail_btnimg mr24'} src={require('../assets/images/detail_play.png')} alt={'播放'}></img>播放
 							</div>
-							<div className={'detail_btnitem flex-ajc' + (this.state.buttonList[2].cursor.curr ? ' curr' : '')} ref={this.state.buttonList[2].cursor.refs}>
+							<div className={'detail_btnitem mr40 flex-ajc' + (this.state.buttonList[2].cursor.curr ? ' curr' : '')} ref={this.state.buttonList[2].cursor.refs}>
 								<img className={'detail_btnimg mr24'} src={require('../assets/images/detail_collect' + this.state.album.collect + '.png')} alt={'收藏'}></img>收藏
 							</div>
 							
@@ -386,11 +443,11 @@ class Detail extends Component {
 				</div>
 				<div className={'module_title0 mt40'}>课程列表</div>
 				<div className={'detailmodulebox'}>
-				<div className={'module_box flex'}>
+				<div className={'module_box flex'} style={{width: this.state.detailList.length * 600}}>
 					{this.state.detailList.map((item,index)=>{
 						return(<div className={'mt40 mr40 module_item3' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'d' + index}>
 							<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
-							<img className={'module_img2' + (this.state.album.isship ? ' none' : '')} src={require('../assets/images/paid' + (item.playable === 0 ? 1 : 0) + '.png')} alt={'费用'}></img>
+							<img className={'module_img2' + (this.state.album.isship ? ' none' : '')} src={require('../assets/images/paid' + (item.playable === 0 ? 1 : 0) + (this.state.album.moduleid === 'yangxiu' ? 0 : '') + '.png')} alt={'费用'}></img>
 							<div className={'module_title1'}>{item.title}</div>
 						</div>)
 					})}
@@ -400,11 +457,11 @@ class Detail extends Component {
 					return (<div key={'c'+ index}>
 						<div className={'module_title0 mt40'}>{item.title}</div>
 						<div className={'recmodulebox recmodulebox'+ index}>
-							<div className={'module_box flex'}>
+							<div className={'module_box flex'} style={{width: item.album.length * 600}}>
 								{item.album.map((item1,index1)=>{
 									return (<div className={'mt40 mr40 module_item3' + (item1.cursor.curr ? ' curr' : '')} ref={item1.cursor.refs} key={'c' + index + '' + index1}>
 										<img className={'module_img1'} src={this.state.imgPath + item1.cover} alt={item1.title}></img>
-										<img className={'module_img2'} src={require('../assets/images/paid' + item1.paid + '.png')} alt={'费用'}></img>
+										<img className={'module_img2'} src={require('../assets/images/paid' + item1.paid + (item1.moduleid === 'yangxiu' ? 0 : '') + '.png')} alt={'费用'}></img>
 										<div className={'module_title1'}>{item1.title}</div>
 									</div>
 								)})}
@@ -421,7 +478,8 @@ class Detail extends Component {
 function mapState(state) {
 	return {
 		routerDomList: state.routerDomList,
-		userInfo: state.userInfo
+		userInfo: state.userInfo,
+		navList: state.navList
 	};
 }
 

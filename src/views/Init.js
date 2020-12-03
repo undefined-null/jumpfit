@@ -4,7 +4,7 @@ import './style/Init.less';
 function Init() {
 	return (
 		<div className={'init-page flex-ajc flex-col'}>
-			<img className={'logo'} alt="logo" src={require('../assets/images/logo.png')}></img>
+			<img className={'logo'} alt="logo" src={require('../assets/images/logohome.png')}></img>
 		</div>
 	);
 }

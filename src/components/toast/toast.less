@@ -11,6 +11,7 @@
 	justify-content: center;
 }
 /* 项目弹窗 */
+
 .page-back-toast {
 	position: absolute;
 	top: 50%;
@@ -22,9 +23,25 @@
 	align-items: center;
 	justify-content: center;
 	background: linear-gradient(180deg, rgba(79, 13, 77, 0.95), rgba(20, 7, 33, 0.95));
+	background: -webkit-linear-gradient(180deg, rgba(79, 13, 77, 0.95), rgba(20, 7, 33, 0.95));
 	font-size: 50px;
 	color: #e6e6e6;
 	border-radius: 70px;
+}
+.toast_plain {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	-webkit-transform: translate(-50%, -50%);
+	padding: 0 60px;
+	min-width: 320px;
+	max-width: 660px;
+	height: 140px;
+	background: rgba(102, 102, 102, 0.9);
+	font-size: 46px;
+	color: #e6e6e6;
+	border-radius: 10px;
 }
 .toast-loading-icon {
 	width: 120px;
@@ -42,9 +59,6 @@
 	padding: 40px 50px;
 	.toast_text {
 		text-align: center;
-		// width: 90%;
-		margin: auto;
-		font-size: 46px;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;

@@ -26,22 +26,22 @@ class MyInfo extends Component {
 				{
 					title: '我的会员',
 					id: 'vip',
-					cursor: this.setCursorObj(this.props.pageId, this.myNavRandomId, 'a',null,{left:'no'})
+					cursor: this.setCursorObj(this.props.pageId, this.myRandomId, 'a',null,{left:'no'})
 				},
 				{
 					title: '我的训练',
 					id: 'train',
-					cursor: this.setCursorObj(this.props.pageId, this.myNavRandomId, 'a',)
+					cursor: this.setCursorObj(this.props.pageId, this.myRandomId, 'a',)
 				},
 				{
 					title: '我的收藏',
 					id: 'collect',
-					cursor: this.setCursorObj(this.props.pageId, this.myNavRandomId, 'a')
+					cursor: this.setCursorObj(this.props.pageId, this.myRandomId, 'a')
 				},
 				{
 					title: '我的数据',
 					id: 'data',
-					cursor: this.setCursorObj(this.props.pageId, this.myNavRandomId, 'a',null,{right:'no'})
+					cursor: this.setCursorObj(this.props.pageId, this.myRandomId, 'a',null,{right:'no'})
 				},
 			],
 			isVip: false,// 是否购买会员
@@ -126,7 +126,7 @@ class MyInfo extends Component {
 					]
 				}
 			],
-			mtTitleId: 'vip', // 选择的信息
+			myTitleId: 'vip', // 选择的信息
 			moduleColor: '#d4cb4c', // 模板颜色
 			navList: [],// 导航列表
 			moduleId: 'fit',
@@ -141,6 +141,7 @@ class MyInfo extends Component {
 			initDataVip: false,
 			initDataNav: false,
 			noLoading: false,
+			domBack: false,
 		};
 		this.handleKeyDown = this.handleKeyDown.bind(this);
 		this.getModuleCode = this.getModuleCode.bind(this);
@@ -149,28 +150,31 @@ class MyInfo extends Component {
 
 	// 将要加载页面dom
 	componentWillMount() {
-		console.log('进入信息页', this.props.params);
 		// this.getUserVip()
 		// this.tagChose()
+		// this.getNav()
 	}
 	// 组件第一次渲染完成，此时dom节点已经生成
 	componentDidMount() {
 		// 获取导航
-		this.getNav()
 		document.addEventListener('keydown', this.handleKeyDown);
-		
+		console.log('----------------')
+		console.log(this.props.params)
 		if(this.props.params) {
 			// 带title_id 过来
-			if(this.props.params.title_id) {
-				console.log(this.props.params.title_id)
+			if(this.props.params.title_id || this.props.params.module_id) {
 				this.setState({
-					mtTitleId: this.props.params.title_id
+					myTitleId: this.props.params.title_id || 'vip',
+					moduleId: this.props.params.module_id || 'fit',
 				})
+				// this.props.params = null
 				setTimeout(()=>{
 					this.tagChose()
-				},100)
+				},0)
 			}
+			this.getNav()
 		} else {
+			this.getNav()
 			this.tagChose()
 		}
 	}
@@ -186,6 +190,7 @@ class MyInfo extends Component {
 	}
 	// 组件中途有更新dom，更新完成后的操作
 	componentDidUpdate(prevProps, prevState) {
+		
 		if (
 			// this.state.initDataVip && 
 			this.state.initDataNav && 
@@ -194,8 +199,10 @@ class MyInfo extends Component {
 				// !prevState.initDataVip
 			)
 		) {
+			console.log('首次')
 			// 增加dom节点
 			this.props.deleteCompDom(this.myRandomId)
+			this.props.deleteCompDom(this.myNavRandomId)
 			this.props.editeDomList([this.state.navList]);
 			this.props.editeDomList([this.state.myTitleList]);
 			this.props.editeDomList([this.state.buttonList]);
@@ -206,21 +213,23 @@ class MyInfo extends Component {
 			this.props.editeDomList([this.state.collectList]);
 			this.props.editeDomList([this.state.sportList]);
 			//将dom节点收集后，才设置当前节点
-			this.props.setCursorDom(this.state.navList[0].cursor.random);
+			if(this.state.myTitleId === 'data') {
+				this.props.setCursorDom(this.state.myTitleList[3].cursor.random);
+			} else {
+				let ni = 0
+				this.state.navList.forEach((item,index)=> {
+					if(item.id === this.state.moduleId) {
+						ni = index
+					}
+				})
+				this.props.setCursorDom(this.state.navList[ni].cursor.random);
+			}
 		}
-		// 展示确认弹窗
-		if (prevState.affirmDelete !== this.state.affirmDelete && this.state.affirmDelete) {
-			// 展示确认删除弹窗的时候
-			console.log('【已选歌曲】展示确认删除弹窗的时候', prevState.affirmDelete, this.state.affirmDelete);
-			//更新完毕后，删除dom节点
-			this.props.deleteCompDom(this.myRandomId);
-			// 增加dom节点
-			this.props.editeDomList([]);
-		} else if(this.state.initDataVip !== prevState.initDataVip) {
+		if(this.state.initDataVip !== prevState.initDataVip) {
 			// 数据更新
 			this.props.deleteCompDom(this.myRandomId)
 			this.props.editeDomList([this.state.navList]);
-			// this.props.editeDomList([this.state.myTitleList]);
+			this.props.editeDomList([this.state.myTitleList]);
 			this.props.editeDomList([this.state.buttonList]);
 			this.props.editeDomList([this.state.cardList]);
 			this.props.editeDomList([this.state.vipCard]);
@@ -228,6 +237,36 @@ class MyInfo extends Component {
 			this.props.editeDomList([this.state.historyList]);
 			this.props.editeDomList([this.state.collectList]);
 			this.props.editeDomList([this.state.sportList]);
+		} else {
+			// 导航移动确认（遥控器无需确认）
+			this.state.navList.forEach(item => {
+				if(item.cursor.curr) {
+					if(item.id !== this.state.moduleId) {
+						console.log('导航移动确认（遥控器无需确认）')
+						console.log(item)
+						this.setState({
+							moduleId: item.id
+						})
+						setTimeout(()=>{
+							this.tagChose()
+						},0)
+					}
+				}
+			})
+			this.state.myTitleList.forEach(item => {
+				if(item.cursor.curr) {
+					if(item.id !== this.state.myTitleId) {
+						console.log('标题移动确认（遥控器无需确认）')
+						console.log(item)
+						this.setState({
+							myTitleId: item.id
+						})
+						setTimeout(()=>{
+							this.tagChose()
+						})
+					}
+				}
+			})
 		}
 		// 滚动元素盒子
 		let currBox1 = $('.myinfo-page .yxpay_list')
@@ -238,12 +277,12 @@ class MyInfo extends Component {
 			currBox1.scrollTop(currBox1.scrollTop() + currDom1.offset().top)
 		}
 		// 滚动元素盒子
-		let currBox0 = $('.myinfo-page')
+		let currBox0 = $('.myinfo-page .list_page')
 		// 当前焦点元素
 		let currDom2 = $('.myinfo-page .list_page .curr')
 		// 如果当前页面存在焦点，移动滚动条
 		if(currDom2.length > 0 && $('.myinfo-page').is(':visible')) {
-			currBox0.scrollTop(currBox0.scrollTop() + currDom2.offset().top - 374)
+			currBox0.scrollTop(currBox0.scrollTop() + currDom2.offset().top - 320)
 		}
 		// 滚动元素盒子
 		let currBox3 = $('.myinfo-page .sport_list')
@@ -253,6 +292,7 @@ class MyInfo extends Component {
 		if(currDom3.length > 0 && $('.myinfo-page').is(':visible')) {
 			currBox3.scrollTop(currBox3.scrollTop() + currDom3.offset().top - 250)
 		}
+		
 		
 	}
 	//监听键盘事件
@@ -265,11 +305,11 @@ class MyInfo extends Component {
 			// 模式选择
 			this.state.myTitleList.forEach((item,index)=> {
 				if (item.cursor.curr) {
+					if(item.id === this.state.myTitleId) return
 					this.setState({
-						mtTitleId: item.id
+						myTitleId: item.id
 					})
 					this.tagChose()
-					return
 				}
 			})
 			// 会员卡购买
@@ -282,6 +322,9 @@ class MyInfo extends Component {
 							card_id: item.id,
 						}
 					});
+					this.setState({
+						domBack: true
+					})
 					return
 				}
 			})
@@ -294,13 +337,20 @@ class MyInfo extends Component {
 						card_id: this.state.vipCard[0].cardid,
 					}
 				});
+				this.setState({
+					domBack: true
+				})
 				return
 			}
 			// 退出登录
 			if(this.state.buttonList[0].cursor.curr) {
-				// this.logOut()
+				
 				this.setState({
-					affirmDelete: true
+					domBack: true
+				})
+				this.props.pushRouter({
+					name: 'logout',
+					pageId: this.getRandom(),
 				})
 				return
 			} else if(this.state.buttonList[1].cursor.curr) {
@@ -317,6 +367,9 @@ class MyInfo extends Component {
 			// 氧秀已购买专辑点击
 			this.state.yangxiuList.forEach(item=> {
 				if(item.cursor.curr) {
+					this.setState({
+						domBack: true
+					})
 					this.props.pushRouter({
 						name: 'detail',
 						pageId: this.getRandom(),
@@ -325,12 +378,16 @@ class MyInfo extends Component {
 							module_id: item.moduleid
 						}
 					});
+					
 					return
 				}
 			})
 			// 训练点击
 			this.state.historyList.forEach(item => {
 				if(item.cursor.curr) {
+					this.setState({
+						domBack: true
+					})
 					this.props.pushRouter({
 						name: 'detail',
 						pageId: this.getRandom(),
@@ -345,6 +402,9 @@ class MyInfo extends Component {
 			// 收藏点击
 			this.state.collectList.forEach(item => {
 				if(item.cursor.curr) {
+					this.setState({
+						domBack: true
+					})
 					this.props.pushRouter({
 						name: 'detail',
 						pageId: this.getRandom(),
@@ -356,6 +416,51 @@ class MyInfo extends Component {
 					return
 				}
 			})
+		} else if(e.keyCode === TvKeyCode.KEY_BACK) {
+			if(this.state.domBack) {
+				this.setState({
+					domBack: false
+				})
+				return
+			}
+			// 判断焦点
+			let back = false
+			let module_index = 0
+			console.log(this.state.navList)
+			console.log(this.state.moduleId)
+			// 氧秀已购列表
+			this.state.navList.forEach((item,index) => {
+				if(item.cursor.curr) {
+					back = true
+				}
+				if(item.id === this.state.moduleId) {
+					module_index = index
+				}
+			})
+			this.state.myTitleList.forEach((item,index) => {
+				if(item.cursor.curr) {
+					back = true
+				}
+			})
+			// 返回上一页
+			if(back) {
+				// setTimeout(()=> {
+					// this.props.pushRouter({ name: 'exitApp', pageId: this.getRandom() });
+					this.props.deleteRouter(1);
+					this.props.deletePageDom(1);
+					
+				// },5)
+			} else {
+				console.log('返回键重置焦点')
+				if(this.state.myTitleId === 'data') {
+					this.props.setCursorDom(this.state.myTitleList[3].cursor.random);
+				} else {
+					this.props.setCursorDom(this.state.navList[module_index].cursor.random);
+				}
+				$('.myinfo-page .list_page').scrollTop(0)
+				$('.myinfo-page .yxpay_list').scrollTop(0)
+				$('.myinfo-page .sport_list').scrollTop(0)
+			}
 		}
 	}
 	
@@ -374,7 +479,7 @@ class MyInfo extends Component {
 				if(index === 0) {
 					item.cursor = this.setCursorObj(this.props.pageId, this.myRandomId, 'b',null,{
 						left: 'no'
-					});
+					},true);
 				}
 			});
 			this.setState({
@@ -390,39 +495,62 @@ class MyInfo extends Component {
 	// 导航回调
 	getModuleCode = (res,code) => {
 		console.log(code)
-		let moduleColor = this.state.navList.forEach(item => {
-			if(item.id === code) {
-				return item.color
-			}
-		})
+		if(code === this.state.moduleId) return
 		this.setState({
 			moduleId: code,
-			moduleColor: moduleColor,
 		})
-		this.tagChose()
+		setTimeout(()=>{
+			this.tagChose()
+		})
 	}
 	// 导航选项点击
 	tagChose(res) {
+		Toast.empty()
 		this.setState({
 			noLoading: false,
 		})
-		console.log(this.state.mtTitleId)
+		// console.log(this.state.myTitleId)
+		// console.log(this.state.moduleId)
+		this.state.myTitleList.forEach(item => {
+			if(item.id === this.state.myTitleId) {
+				this.state.myTitleList.forEach(item1 => {
+					item1.cursor.resetDom = false
+				})
+				item.cursor.resetDom = true
+			}
+		})
+		let moduleColor = ''
+		this.state.navList.forEach(item => {
+			if(item.id === this.state.moduleId) {
+				this.state.navList.forEach(item1 => {
+					item1.cursor.resetDom = false
+				})
+				item.cursor.resetDom = true
+				moduleColor = item.color
+			}
+		})
+		console.log('+++++++++++++++++++++++++++++++++')
 		console.log(this.state.moduleId)
-		if(this.state.mtTitleId === 'vip') {
+		this.setState({
+			navList: this.state.navList,
+			myTitleList: this.state.myTitleList,
+			moduleColor: moduleColor,
+		})
+		if(this.state.myTitleId === 'vip') {
 			// 我的会员
 			if(this.state.moduleId !== 'yangxiu') {
 				this.getUserVip()
 			} else {
 				this.getUserYangxiu()
 			}
-		} else if(this.state.mtTitleId === 'train') {
+		} else if(this.state.myTitleId === 'train') {
 			// 我的训练
 			this.getUserHistory()
-		} else if(this.state.mtTitleId === 'collect') {
+		} else if(this.state.myTitleId === 'collect') {
 			// 我的收藏
 			this.getUserCollect()
 			
-		} else if(this.state.mtTitleId === 'data') {
+		} else if(this.state.myTitleId === 'data') {
 			// 我的数据
 			this.getUserSport()
 		}
@@ -432,7 +560,7 @@ class MyInfo extends Component {
 			let res = await userOutApi()
 			if(res){
 				this.props.removeUserInfo()
-				this.props.deleteRouter(1,{asd:'asd'});
+				this.props.deleteRouter(1);
 				this.props.deletePageDom(1);
 				Toast.plain('您已退出登录',2000)
 			}
@@ -516,12 +644,14 @@ class MyInfo extends Component {
 					noLoading: true,
 					initDataVip: !this.state.initDataVip
 				})
+				Toast.destroy()
 			} else {
 				this.setState({
 					isVip: false,
 					noLoading: true,
 					initDataVip: !this.state.initDataVip
 				})
+				Toast.destroy()
 			}
 			console.log(res)
 		} catch(e) {
@@ -554,12 +684,14 @@ class MyInfo extends Component {
 					noLoading: true,
 					initDataVip: !this.state.initDataVip
 				})
+				Toast.destroy()
 			} else {
 				this.setState({
 					historyList: [],
 					noLoading: true,
 					initDataVip: !this.state.initDataVip
 				})
+				Toast.destroy()
 			}
 		} catch(e) {
 			console.log(e)
@@ -590,12 +722,14 @@ class MyInfo extends Component {
 					noLoading: true,
 					initDataVip: !this.state.initDataVip
 				})
+				Toast.destroy()
 			} else {
 				this.setState({
 					collectList: [],
 					noLoading: true,
 					initDataVip: !this.state.initDataVip
 				})
+				Toast.destroy()
 			}
 		} catch(e) {
 			console.log(e)
@@ -618,12 +752,14 @@ class MyInfo extends Component {
 					noLoading: true,
 					initDataVip: !this.state.initDataVip
 				})
+				Toast.destroy()
 			} else {
 				this.setState({
 					collectList: [],
 					noLoading: true,
 					initDataVip: !this.state.initDataVip
 				})
+				Toast.destroy()
 			}
 		} catch(e) {
 			console.log(e)
@@ -651,13 +787,13 @@ class MyInfo extends Component {
 				<div className={'empty_56'}></div>
 				<div className={'module_box flex-ac mb40'}>
 					{this.state.myTitleList.map((item,index)=> {
-						return(<div className={'myinfo_title ' + (item.cursor.curr ? ' curr' : '')  + (item.id === this.state.mtTitleId ? ' on' : '')} ref={item.cursor.refs} key={'a' + index}>
+						return(<div className={'myinfo_title ' + (item.cursor.curr ? ' curr' : '')  + (item.id === this.state.myTitleId ? ' on' : '')} ref={item.cursor.refs} key={'a' + index}>
 							{item.title}
 						</div>)
 					})}
 				</div>
 				{/* nav导航 */}
-				{this.state.mtTitleId !== 'data' ?
+				{this.state.myTitleId !== 'data' ?
 					<NavList 
 						pageId={this.props.pageId}
 						navBack={this.getModuleCode}
@@ -669,7 +805,7 @@ class MyInfo extends Component {
 				:''}
 				{this.state.noLoading ?
 					<div>
-						{this.state.mtTitleId === 'vip' ? 
+						{this.state.myTitleId === 'vip' ? 
 							<div className={'myvip_box flex-bt'}>
 								<div className={'myvip_user tc'}>
 									<img className={'myvip_user_img'} src={this.props.userInfo.avatar} alt={'用户头像'}></img>
@@ -736,13 +872,13 @@ class MyInfo extends Component {
 								</div>
 							</div>
 						: '' }
-						{this.state.mtTitleId === 'train' ?
+						{this.state.myTitleId === 'train' ?
 							(this.state.historyList.length > 0 ?
 								<div className={'module_box flex-bt flex-wrap list_page'}>
 									{this.state.historyList.map((item,index)=> {
-										return(<div className={'module_item3 my_scale mt40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'his' + index}>
+										return(<div className={'module_item3 my_scale mb40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'his' + index}>
 											<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
-											<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + '.png')} alt={'费用'}></img>
+											<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + (item.moduleid === 'yangxiu' ? 0 : '') + '.png')} alt={'费用'}></img>
 											<div className={'module_title1'}>{item.title}</div>
 										</div>
 									)})}
@@ -753,13 +889,13 @@ class MyInfo extends Component {
 								<div className={'list_empty'}>您还没有训练记录哦~</div>
 							)
 						: '' }
-						{this.state.mtTitleId === 'collect' ?
+						{this.state.myTitleId === 'collect' ?
 							(this.state.collectList.length > 0 ?
 								<div className={'module_box flex-bt flex-wrap list_page'}>
 									{this.state.collectList.map((item,index)=> {
-										return(<div className={'module_item3 my_scale mt40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'his' + index}>
+										return(<div className={'module_item3 my_scale mb40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'his' + index}>
 											<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
-											<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + '.png')} alt={'费用'}></img>
+											<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + (item.moduleid === 'yangxiu' ? 0 : '') + '.png')} alt={'费用'}></img>
 											<div className={'module_title1'}>{item.title}</div>
 										</div>
 									)})}
@@ -770,7 +906,7 @@ class MyInfo extends Component {
 								<div className={'list_empty'}>您还没有收藏记录哦~</div>
 							)
 						: '' }
-						{this.state.mtTitleId === 'data' ?
+						{this.state.myTitleId === 'data' ?
 							<div className={'sport_box flex-bt'}>
 								<div className={'sport_left'}>
 									<div className={'sport_user flex-ac'}>
@@ -779,28 +915,29 @@ class MyInfo extends Component {
 									</div>
 									<div className={'sport_info flex-bt flex-wrap'}>
 										<div className={'sport_info_item'}>
-											<div className={'fs56 font-bold'}>{Math.floor(this.state.sportInfo.total_duration/(60*1000))}</div>
+											<div className={'fs56 font-bold'}>{Math.floor(this.props.userInfo.total_duration/(60*1000))}</div>
 											<div className={'fs26 mt24'}>总时长（分钟）</div>
 										</div>
 										<div className={'sport_info_item'}>
-											<div className={'fs56 font-bold'}>{this.state.sportInfo.total_calorie}</div>
+											<div className={'fs56 font-bold'}>{this.props.userInfo.total_calorie}</div>
 											<div className={'fs26 mt24'}>总消耗（千卡）</div>
 										</div>
 										<div className={'sport_info_item'}>
-											<div className={'fs56 font-bold'}>{this.state.sportInfo.total_days}</div>
+											<div className={'fs56 font-bold'}>{this.props.userInfo.total_days}</div>
 											<div className={'fs26 mt24'}>累计（天）</div>
 										</div>
 										<div className={'sport_info_item'}>
-											<div className={'fs56 font-bold'}>{this.state.sportInfo.total_num}</div>
+											<div className={'fs56 font-bold'}>{this.props.userInfo.total_num}</div>
 											<div className={'fs26 mt24'}>完成（次）</div>
 										</div>
 									</div>
 								</div>
 								<div className={'sport_right'}>
+									<div className={'sport_list'}>
 									{this.state.sportList.map((item,index)=> {
 										if(item.content.length > 0) {
 											return (
-												<div className={'sport_list'} key={'spl' + index}>
+												<div className={''} key={'spl' + index}>
 													<div className={'sport_list_title mt32 fs40'}>{item.date}</div>
 													{item.content.map((item1,index1)=> {
 														return(
@@ -815,6 +952,7 @@ class MyInfo extends Component {
 											return ''
 										}
 									})}
+									</div>
 								</div>
 							</div>
 						: '' }
@@ -825,7 +963,7 @@ class MyInfo extends Component {
 						affirmCallback={this.deleteAllList.bind(this)}
 						cancelCallback={this.closeAffirm.bind(this)}
 						affirmInfo={this.state.affirmInfo}
-						pageId={this.props.pageId}
+						pageId={this.getRandom()}
 					></Popup>
 				) : (
 					''

@@ -207,10 +207,10 @@ body,
 
 // 模块通用
 .module_box>div {
-	-webkit-transition: -webkit-transform 0.1s ease 0s;
 	transition: transform 0.1s ease 0s;
-	-webkit-transform-origin: center;
+	-webkit-transition: -webkit-transform 0.1s ease 0s;
 	transform-origin: center;
+	-webkit-transform-origin: center;
 	border: 4px solid transparent;
 	position: relative;
 	border-radius: 10px;
@@ -254,11 +254,13 @@ body,
 .module_img1 {
 	width: 100%;
 	height: 100%;
+	border-radius: 10px;
 }
 .module_img2 {
 	position: absolute;
 	top: 0;
 	right: 0;
+	border-radius: 10px;
 }
 
 
@@ -327,6 +329,7 @@ body,
 	height: 294px;
 	padding: 123px 21px;
 	background: linear-gradient(180deg, rgba(79, 13, 77, 0.9), rgba(20, 7, 33, 0.9));
+	background: -webkit-linear-gradient(180deg, rgba(79, 13, 77, 0.9), rgba(20, 7, 33, 0.9));
 	font-size: 50px;
 	color: #e6e6e6;
 	border-radius: 10px;
