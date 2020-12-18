@@ -89,9 +89,7 @@ class OrderQr extends Component {
 		//开始判断键盘逻辑
 		if (e.keyCode === TvKeyCode.KEY_ENTER) {
 			// 确认键点击
-			console.log('模块列表')
 			this.state.albumList.forEach((item,index)=> {
-				console.log(item)
 				if (item.cursor.curr) {
 					this.props.pushRouter({
 						name: 'detail',
@@ -107,7 +105,7 @@ class OrderQr extends Component {
 		}
 	}
 	
-	// 获取登录二维码
+	// 获取支付二维码
 	async getQrCode(params) {
 		let rdata = {
 				cardid: params.card_id
@@ -129,7 +127,6 @@ class OrderQr extends Component {
 		
 		try {
 			let res = await buyApi(rdata)
-			console.log(res)
 			this.setState({
 				qrCode: res.data.code_url,
 				orderId: res.data.orderid,

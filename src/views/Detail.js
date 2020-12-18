@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import './style/Detail.less';
-import { albumDetailApi,collectApi } from '../server/api';
-import Init from './Init';
+import { albumDetailApi,collectApi,userStatusApi } from '../server/api';
+// import Init from './Init';
+import { toVideoTime } from '../utils/utils';
 import { mapDispatch, TvKeyCode, shouldComponentCurrUpdate } from '../utils/pageDom';
 import { connect } from 'react-redux';
 import Toast from '../components/toast/Index';
@@ -13,11 +14,11 @@ class Detail extends Component {
 		//设置模块首页组件的随机标识
 		this.detailRandomId = this.getRandom();
 		this.detailBtnRandomId = this.getRandom();
+		this.detailItem = {};
 		this.state = {
 			moduleId: '',// 模块ID
 			detailId: '',// 详情ID
 			imgPath: '', // 图片路径
-			icon: 'http://master.dig88.cn/fit2/images/jump_fit.png',
 			album: { // 专辑详情
 				bigimage: "/fit/basis_f_6.png",
 				calorie: "39",
@@ -96,7 +97,6 @@ class Detail extends Component {
 	// 将要加载页面dom
 	componentWillMount() {
 		console.log('带着detail_id', this.props.params);
-		console.log(this.props.navList)
 		this.setState({
 			detailId: this.props.params.detail_id,
 			moduleId: this.props.params.module_id
@@ -105,18 +105,9 @@ class Detail extends Component {
 	}
 	// 组件第一次渲染完成，此时dom节点已经生成
 	componentDidMount() {
-		console.log(this.props.navList)
-		
-		this.props.navList.forEach(item => {
-			if(item.id === this.props.params.module_id) {
-				this.setState({
-					icon: item.prefix + item.cover
-				})
-			}
-		})
 		// 获取导航
-		document.addEventListener('keydown', this.handleKeyDown);
 		this.props.editeDomList([]);
+		document.addEventListener('keydown', this.handleKeyDown);
 	}
 	// 组件将要卸载
 	componentWillUnmount() {
@@ -130,11 +121,34 @@ class Detail extends Component {
 	}
 	// 组件中途有更新dom，更新完成后的操作
 	componentDidUpdate(prevProps, prevState) {
-		console.log('detail 加载完成')
 		if(prevProps.backParams) {
 			if(prevProps.backParams.payStatus) {
+				// 支付返回，重新获取数据
 				this.getAlbumDetail(this.props.params.detail_id,this.props.params.module_id)
+				this.getUserInfo()
 				prevProps.backParams.payStatus = false
+			} else if(prevProps.backParams.playStatus) {
+				// 播放返回，
+				this.setState({
+					detailList: prevProps.backParams.video_list,
+					initDataRefresh: !this.state.initDataRefresh
+				})
+				this.state.detailList.forEach(item => {
+					if(item.cursor.curr) {
+						this.state.detailList.forEach(item1 => {
+							if(item1.history > 0) {
+								this.detailItem = item1
+							}
+						})
+					}
+				})
+				this.state.buttonList.forEach(item => {
+					if(item.cursor.curr) {
+						this.detailItem = {}
+					}
+				})
+				prevProps.backParams.playStatus = false
+				console.log(this.detailItem)
 			}
 		}
 		// if (
@@ -159,7 +173,21 @@ class Detail extends Component {
 			this.props.editeDomList([this.state.buttonList]);
 			this.props.editeDomList([this.state.recList]);
 			this.props.editeDomList([this.state.intro]);
-			this.props.setCursorDom(this.state.buttonList[1].cursor.random);
+			if(this.detailItem.id) {
+				this.state.detailList.forEach((item,index)=> {
+					if(item.id === this.detailItem.id) {
+						this.props.setCursorDom(item.cursor.random);
+						this.detailItem = {}
+					}
+				})
+			} else {
+				this.props.setCursorDom(this.state.buttonList[1].cursor.random);
+			}
+			let currBox1 = $('.detail-page .detailmodulebox')
+			let currDom1 = $('.detail-page .detailmodulebox .hcurr')
+			if(currDom1.length > 0) {
+				currBox1.scrollLeft(currBox1.scrollLeft() + currDom1.offset().left - 670)
+			}
 		} else {
 			// 滚动元素盒子
 			let currBox = $('.detail-page')
@@ -177,7 +205,6 @@ class Detail extends Component {
 					let currBox2 = $('.detail-page .recmodulebox' + index)
 					let currDom2 = $('.detail-page .recmodulebox' + index + ' .curr')
 					if(currDom2.length > 0) {
-						console.log(currDom2.offset().left)
 						currBox2.scrollLeft(currBox2.scrollLeft() + currDom2.offset().left - 670)
 					}
 				})
@@ -188,7 +215,6 @@ class Detail extends Component {
 							item1.cursor.resetDom = false
 						});
 						item.cursor.resetDom = true;
-						console.log('changeBtn')
 						this.changeBtn(item.type)
 					}
 				})
@@ -220,13 +246,17 @@ class Detail extends Component {
 			// 购买点击
 			if(this.state.buttonList[0].cursor.curr) {
 				if(this.state.album.moduleid === 'yangxiu') {
-					this.props.pushRouter({
-						name: 'orderqr',
-						pageId: this.getRandom(),
-						params: {
-							album_id: this.state.album.id,
-						}
-					});
+					if(this.props.userInfo.id) {
+						this.props.pushRouter({
+							name: 'orderqr',
+							pageId: this.getRandom(),
+							params: {
+								album_id: this.state.album.id,
+							}
+						});
+					} else {
+						Toast.plain('请先登录',2000)
+					}
 				} else {
 					if(this.props.userInfo.id) {
 						this.props.pushRouter({
@@ -237,7 +267,7 @@ class Detail extends Component {
 							}
 						});
 					} else {
-						Toast.plain('请先登录')
+						Toast.plain('请先登录',2000)
 					}
 				}
 			}
@@ -258,13 +288,26 @@ class Detail extends Component {
 						Toast.plain('请您先购买会员',2000)
 					}
 				} else {
+					let hitem = {}
+					this.state.detailList.forEach(item => {
+						if(item.history > 0) {
+							hitem = item
+							return
+						}
+					})
+					
+					if(!hitem.id) {
+						hitem = this.state.detailList[0]
+					}
 					this.props.pushRouter({
 						name: 'video',
 						pageId: this.getRandom(),
 						params: {
-							video_id: this.state.detailList[0].id,
+							video_id: hitem.id,
 							album_id: this.state.album.id,
 							module_id: this.state.moduleId,
+							video_time: hitem.history,
+							video_list: this.state.detailList
 						}
 					});
 				}
@@ -290,6 +333,8 @@ class Detail extends Component {
 								video_id: item.id,
 								album_id: this.state.album.id,
 								module_id: this.state.moduleId,
+								video_time: item.history,
+								video_list: this.state.detailList
 							}
 						});
 					}
@@ -331,13 +376,13 @@ class Detail extends Component {
 	}
 	// 获取模块列表
 	async getAlbumDetail(did,mid) {
-		console.log(did,mid)
 		try {
 			let res = await albumDetailApi({
 				albumid:did,
 				moduleid:mid
 			})
 			res.contentlist.forEach((item,index)=> {
+				item.playTime = toVideoTime(item.history / 1000)
 				item.cursor = this.setCursorObj(this.props.pageId, this.detailRandomId, 'c')
 				if(index === res.contentlist.length-1 && index === 0){
 					item.cursor = this.setCursorObj(this.props.pageId, this.detailRandomId, 'c',null,{
@@ -390,20 +435,33 @@ class Detail extends Component {
 			console.log(e)
 		}
 	}
+	
+	// 获取会员信息
+	async getUserInfo() {
+		try {
+			let res = await userStatusApi()
+			console.log('更新会员信息')
+			if(res) {
+				this.props.setUserInfo(res)
+			}
+		} catch(e) {
+			console.log(e)
+		}
+	}
 	// 页面渲染
 	render() {
 		if ( !this.state.initDataDetail) {
 			//没有加载出来数据的时候，限制初始化页面
-			// return <Init></Init>;
+			// return <Init></Init>; this.props.params.module_id
 			return (
 				<div className={'detail-page flex-ajc'}>
-					<img className={'logo'} alt="logo" src={this.state.icon}></img>
+					<img className={'logo'} alt="logo" src={require('../assets/images/logo' + (this.props.params.module_id ? this.props.params.module_id : 'fit') + '.png')}></img>
 				</div>
 			)
-		}
+		} else {
 		return (
 			<div className={'detail-page ' + this.props.display}>
-				<div className={'empty_module'}></div>
+				<div className={'empty_120'}></div>
 				<div className={'flex'}>
 					<div className={'detail_cover'}>
 						<img src={this.state.imgPath + this.state.album.bigimage} alt={'专辑封面'}></img>
@@ -445,10 +503,11 @@ class Detail extends Component {
 				<div className={'detailmodulebox'}>
 				<div className={'module_box flex'} style={{width: this.state.detailList.length * 600}}>
 					{this.state.detailList.map((item,index)=>{
-						return(<div className={'mt40 mr40 module_item3' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'d' + index}>
+						return(<div className={'mt40 mr40 module_item3' + (item.cursor.curr ? ' curr' : '') + (item.history > 0 ? ' hcurr' : '')} ref={item.cursor.refs} key={'d' + index}>
 							<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
 							<img className={'module_img2' + (this.state.album.isship ? ' none' : '')} src={require('../assets/images/paid' + (item.playable === 0 ? 1 : 0) + (this.state.album.moduleid === 'yangxiu' ? 0 : '') + '.png')} alt={'费用'}></img>
 							<div className={'module_title1'}>{item.title}</div>
+							<div className={'module_time ' + (item.history > 0 ? '' : ' none')}>已播放至{item.playTime}</div>
 						</div>)
 					})}
 				</div>
@@ -462,7 +521,7 @@ class Detail extends Component {
 									return (<div className={'mt40 mr40 module_item3' + (item1.cursor.curr ? ' curr' : '')} ref={item1.cursor.refs} key={'c' + index + '' + index1}>
 										<img className={'module_img1'} src={this.state.imgPath + item1.cover} alt={item1.title}></img>
 										<img className={'module_img2'} src={require('../assets/images/paid' + item1.paid + (item1.moduleid === 'yangxiu' ? 0 : '') + '.png')} alt={'费用'}></img>
-										<div className={'module_title1'}>{item1.title}</div>
+										<div className={'module_title1 none'}>{item1.title}</div>
 									</div>
 								)})}
 							</div>
@@ -471,7 +530,7 @@ class Detail extends Component {
 					)
 				})}
 			</div>
-		);
+		);}
 	}
 }
 //【焦点】需要渲染什么数据

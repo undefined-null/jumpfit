@@ -182,7 +182,7 @@ class HomeHeader extends React.Component {
 						<div  className={'ml16 mr24 flex-ac fs26'}>
 							总时长(分钟):<span className={'font-bold fs32 ml16'}>{Math.floor(this.props.userInfo.total_duration/(60 *1000))}</span>
 							<div className={'header_line'}></div>
-							总消耗(千卡):<span className={'font-bold fs32 ml16'}>{this.props.userInfo.total_calorie}</span>
+							总消耗(千卡):<span className={'font-bold fs32 ml16'}>{parseInt(this.props.userInfo.total_calorie)}</span>
 						</div>
 					
 					:

@@ -4,6 +4,7 @@ import { searchApi, searchHotApi } from '../server/api';
 import { mapDispatch, TvKeyCode, shouldComponentCurrUpdate } from '../utils/pageDom';
 import { connect } from 'react-redux';
 import Toast from '../components/toast/Index';
+import NoMore from './NoMore.js';
 import $ from 'jquery';
 
 class Search extends Component {
@@ -91,6 +92,7 @@ class Search extends Component {
 	// 组件第一次渲染完成，此时dom节点已经生成
 	componentDidMount() {
 		// 获取导航
+		this.props.editeDomList([]);
 		document.addEventListener('keydown', this.handleKeyDown);
 	}
 	// 组件将要卸载
@@ -113,14 +115,13 @@ class Search extends Component {
 			)
 		) {
 			// 增加dom节点
-			console.log('dom')
 			this.props.editeDomList([this.state.allKeyBoard]);
 			this.props.editeDomList([this.state.searchCodeList]);
 			this.props.editeDomList([this.state.buttonList]);
 			this.props.editeDomList([this.state.searchList]);
 			//将dom节点收集后，才设置当前节点
 			this.props.setCursorDom(this.state.allKeyBoard[0].cursor.random);
-		}
+		} else 
 		if (this.state.initDataList !== prevState.initDataList) {
 			this.props.deleteCompDom(this.searchRandomId);
 
@@ -131,26 +132,32 @@ class Search extends Component {
 			if (this.state.searchList.length > 0) {
 				this.props.setCursorDom(this.state.searchList[0].cursor.random);
 			}
-
-		}
-		// 滚动元素盒子
-		let lrBox = $('.search-page')
-		let lCurr = $('.search-page .search_left .curr')
-		if (lCurr.length > 0) {
-			lrBox.scrollLeft(0)
-			$(".search-page .search_left").css("opacity", "1");
+			
 		} else {
-			lrBox.scrollLeft(664)
+			// 滚动元素盒子
+			let lrBox = $('.search-page')
+			let lCurr = $('.search-page .search_left .curr')
+			if (lCurr.length > 0) {
+				lrBox.scrollLeft(0)
+				$(".search-page .search_left").css("opacity", "1");
+			} else {
+				lrBox.scrollLeft(664)
 
-			$(".search-page .search_left").css("opacity", "0");
+				$(".search-page .search_left").css("opacity", "0");
 
-		}
-		// 当前焦点元素
-		let currBox = $('.search-page .search_right')
-		let currDom = $('.search-page .search_right .curr')
-		// 如果当前页面存在焦点，移动滚动条
-		if (currDom.length > 0 && $('.search-page').is(':visible')) {
-			currBox.scrollTop(currBox.scrollTop() + currDom.offset().top - 374)
+			}
+			// 当前焦点元素
+			let currBox = $('.search-page .search_right')
+			let currDom = $('.search-page .search_right .curr')
+			// 如果当前页面存在焦点，移动滚动条
+			if (currDom.length > 0 && $('.search-page').is(':visible')) {
+				currBox.scrollTop(currBox.scrollTop() + currDom.offset().top - 374)
+			}
+			this.props.deleteCompDom(this.searchRandomId);
+			this.props.editeDomList([this.state.allKeyBoard]);
+			this.props.editeDomList([this.state.searchCodeList]);
+			this.props.editeDomList([this.state.buttonList]);
+			this.props.editeDomList([this.state.searchList]);
 		}
 	}
 	//监听键盘事件
@@ -163,6 +170,10 @@ class Search extends Component {
 			// 字母点击
 			this.state.allKeyBoard.forEach((item) => {
 				if (item.cursor.curr) {
+					if(this.state.searchCode.length >= 20) {
+						Toast.plain('最多输入二十个字母',1000)
+						return
+					}
 					let code = this.state.searchCode + item.key
 					this.setState({
 						searchCode: code
@@ -193,7 +204,7 @@ class Search extends Component {
 						if (this.state.searchCode) {
 							this.getSearchList()
 						} else {
-							Toast.plain('请输入要搜索的内容')
+							Toast.plain('请输入要搜索的内容',2000)
 						}
 					}
 				}
@@ -201,7 +212,6 @@ class Search extends Component {
 			// 热搜点击
 			this.state.searchCodeList.forEach((item, index) => {
 				if (item.cursor.curr) {
-					console.log(item.pinyin)
 					this.getSearchList(item.pinyin)
 					return
 				}
@@ -230,7 +240,6 @@ class Search extends Component {
 	async getSearchHost() {
 		try {
 			let res = await searchHotApi()
-			console.log(res)
 			if (res) {
 				res.forEach((item, index) => {
 					item.cursor = this.setCursorObj(this.props.pageId, this.searchRandomId, 'd');
@@ -252,7 +261,7 @@ class Search extends Component {
 
 	// 搜索结果
 	async getSearchList(pinyin = '') {
-		Toast.loading('正在搜索中')
+		Toast.changLoading('正在搜索中')
 		try {
 			pinyin = pinyin.replace(/[^a-zA-Z0-9]/g, "")
 			let res = await searchApi({
@@ -269,7 +278,6 @@ class Search extends Component {
 					initDataList: !this.state.initDataList
 				})
 				Toast.destroy()
-				console.log(this.state.searchList)
 			} else {
 				this.setState({
 					searchList: [],
@@ -293,7 +301,9 @@ class Search extends Component {
 					<div className={'search_left fs40'}>
 						<div className={'search_left_title flex-ac'}>
 							<img className={'search_left_img'} src={require('../assets/images/search.png')} alt={'搜索'}></img>
-							<div className={'search_left_code ' + (this.state.searchCode ? ' ' : ' search_empty_code')}>{this.state.searchCode ? this.state.searchCode : '搜索您想要的专辑名称'}</div>
+							<div className={'search_left_code ' + (this.state.searchCode ? ' ' : ' search_empty_code')}>
+								<div className={'search_left_code_text'}>{this.state.searchCode ? this.state.searchCode : '搜索您想要的专辑名称'}</div>
+							</div>
 						</div>
 						<div className={'search_left_btnbox flex-bt'}>
 							<div className={'search_left_btn flex-ajc ' + (this.state.buttonList[0].cursor.curr ? ' curr' : '')} ref={this.state.buttonList[0].cursor.refs}>
@@ -329,9 +339,10 @@ class Search extends Component {
 								{this.state.searchList.map((item, index) => {
 									return (<div className={'module_item2 mb40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'e' + index}>
 										<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
-										<div className={'module_title1'}>{item.title}</div>
+										<div className={'module_title1 none'}>{item.title}</div>
 									</div>)
 								})}
+								{this.state.searchList.length > 7 ? <NoMore></NoMore> : ''}
 							</div>
 						}
 					</div>

@@ -51,9 +51,9 @@ export default {
 	changLoading(content, duration, onClose) {
 		return notice('changLoading', content, duration, onClose);
 	},
-	// 普通的提示，没图标，默认只有描述的时候不消失
+	// 普通的提示，没图标，默认2秒后消失
 	plain(content, duration, onClose) {
-		return notice('plain', content, duration, onClose);
+		return notice('plain', content, duration ? duration : 2000,onClose);
 	},
 	// 普通的提示，有个叹号的图标，默认只有描述的时候不消失
 	info(content, duration, onClose) {

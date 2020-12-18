@@ -49,6 +49,7 @@ class Video extends Component {
 		this.__playing = this.__playing.bind(this);
 		this.__waiting = this.__waiting.bind(this);
 		this.__loadedmetadata = this.__loadedmetadata.bind(this);
+		this.__canplay = this.__canplay.bind(this);
 	}
 
 	// 将要加载页面dom
@@ -61,16 +62,20 @@ class Video extends Component {
 	componentDidMount() {
 		// 获取导航
 		document.addEventListener('keydown', this.handleKeyDown);
-		this.props.editeDomList([]);
+		this.props.editeDomList([],'video');
 		
 		this.getVideo(this.props.params.video_id)
-		this.getAlbum(this.props.params)
+		this.setState({
+			detailList: this.props.params.video_list
+		})
+		// this.getAlbum(this.props.params)
 		// 绑定播放器
 		this.state.videoRef.current.addEventListener('timeupdate', this.__timeupdate);
 		this.state.videoRef.current.addEventListener('ended', this.__onended);
 		this.state.videoRef.current.addEventListener('playing', this.__playing);
 		this.state.videoRef.current.addEventListener('waiting', this.__waiting);
 		this.state.videoRef.current.addEventListener('loadedmetadata', this.__loadedmetadata);
+		this.state.videoRef.current.addEventListener('canplay', this.__canplay);
 	}
 	// 组件将要卸载
 	componentWillUnmount() {
@@ -81,6 +86,7 @@ class Video extends Component {
 		this.state.videoRef.current.removeEventListener('playing', this.__playing);
 		this.state.videoRef.current.removeEventListener('waiting', this.__waiting);
 		this.state.videoRef.current.removeEventListener('loadedmetadata', this.__loadedmetadata);
+		this.state.videoRef.current.removeEventListener('canplay', this.__canplay);
 	}
 	// 判断是否要移动焦点的时候，用的比较多
 	componentWillReceiveProps(nextProps) {
@@ -134,6 +140,10 @@ class Video extends Component {
 		}
 		// 快退
 		if(e.keyCode === 37 && !this.state.affirmDelete) {
+			// if(Toast.have()) {return}
+			if(!this.state.videoRef.current.currentTime) {
+				return
+			}
 			this.state.videoRef.current.currentTime -= 20
 			$('.video_title').removeClass('video_title_none')
 			$('.progress_bar_box').removeClass('video_title_none')
@@ -144,7 +154,24 @@ class Video extends Component {
 		}
 		// 快进
 		if(e.keyCode === 39 && !this.state.affirmDelete) {
-			this.state.videoRef.current.currentTime += 20
+			// if(Toast.have()) {return}
+			if(!this.state.videoRef.current.currentTime) {
+				return
+			}
+			let svcDtime = this.state.videoRef.current.duration
+			let svcCtime = this.state.videoRef.current.currentTime
+			if(svcCtime + 20 < svcDtime) {
+				this.state.videoRef.current.currentTime += 20
+			} else if(svcCtime + 5 < svcDtime){
+				this.state.videoRef.current.currentTime += 5
+			} else {
+				this.state.videoRef.current.currentTime = svcDtime - 0.1
+			}
+			this.setState({
+				videoTime: toVideoTime(this.state.videoRef.current.currentTime),
+				videoLineWidth: Math.floor(this.state.videoRef.current.currentTime / this.state.videoRef.current.duration * 100),
+				videoPlay: this.state.videoRef.current.paused ? false : true,
+			})
 			$('.video_title').removeClass('video_title_none')
 			$('.progress_bar_box').removeClass('video_title_none')
 			this.state.videoRef.current.pause()
@@ -154,16 +181,23 @@ class Video extends Component {
 			return false
 		}
 		if(e.keyCode === TvKeyCode.KEY_BACK) {
-			console.log('返回')
-			this.state.videoRef.current.pause()
-			if(this.timer) {
-				clearTimeout(this.timer)
+			Toast.destroy()
+			if(!this.state.affirmDelete) {
+				this.state.videoRef.current.pause()
+				if(this.timer) {
+					clearTimeout(this.timer)
+				}
+				$('.video_title').removeClass('video_title_none')
+				$('.progress_bar_box').removeClass('video_title_none')
+				this.setState({
+					affirmDelete: true,
+				})
+			} else {
+				this.setState({
+					affirmDelete: false
+				});
+				this.state.videoRef.current.play()
 			}
-			$('.video_title').removeClass('video_title_none')
-			$('.progress_bar_box').removeClass('video_title_none')
-			this.setState({
-				affirmDelete: true,
-			})
 			return false
 		}
 	}
@@ -188,7 +222,7 @@ class Video extends Component {
 	async getVideo(id) {
 		setTimeout(()=> {
 			Toast.changLoading()
-		},1)
+		},0)
 		try {
 			let res = await videoApi({
 				contentid: id,
@@ -197,7 +231,6 @@ class Video extends Component {
 				videoInfo: res.data,
 				imgPath: res.prefix,
 			})
-			Toast.destroy()
 		} catch(e) {
 			console.log(e)
 		}
@@ -220,9 +253,14 @@ class Video extends Component {
 	
 	// 更新运动数据
 	async sportUpdata() {
+		// 判断已有播放时长
+		let havetime = 0
+		if(this.state.videoInfo.id === this.props.params.video_id) {
+			havetime = this.props.params.video_time
+		}
 		try {
 			let res = await sportUpdataApi({
-				duration: Math.floor(this.state.videoRef.current.currentTime * 1000),
+				duration: Math.floor((this.state.videoRef.current.currentTime * 1000) - havetime) <= 0 ? 0 : Math.floor((this.state.videoRef.current.currentTime * 1000) - havetime),
 			})
 			if(res) {
 				console.log(res)
@@ -234,7 +272,6 @@ class Video extends Component {
 	
 	// 弹窗取消
 	closeAffirm() {
-		console.log('关闭弹窗');
 		this.setState({
 			affirmDelete: false
 		});
@@ -247,16 +284,36 @@ class Video extends Component {
 		// });
 		this.videoUpdata()
 		this.sportUpdata()
+		if(this.props.userInfo.id) {
+			this.state.detailList.forEach(item => {
+				if(item.id === this.state.videoInfo.id) {
+					console.log('item', item)
+					item.history = Math.floor(this.state.videoRef.current.currentTime * 1000)
+					item.playTime = toVideoTime(item.history / 1000)
+					// item.cursor.curr = true
+				} else {
+					item.history = 0
+					// item.cursor.curr = false
+				}
+			})
+		}
 		setTimeout(() =>{
-			this.props.deleteRouter(1);
+			this.props.deleteRouter(1,{
+				playStatus: true,
+				video_list: this.state.detailList
+			});
 			this.props.deletePageDom(1);
-		},800)
+		},500)
 	}
 	
 	// 获取视频信息
 	__loadedmetadata() {
 		// console.log('视频时长',this.state.videoRef.current.duration)
 		// console.log('视频播放时间',this.state.videoRef.current.currentTime)
+		// console.log(this.props.params)
+		if(this.props.params.video_time > 0 && this.props.params.video_id === this.state.videoInfo.id) {
+			this.state.videoRef.current.currentTime = this.props.params.video_time / 1000
+		}
 		this.setState({
 			videoTime: toVideoTime(this.state.videoRef.current.currentTime),
 			videoDtime: toVideoTime(this.state.videoRef.current.duration)
@@ -269,12 +326,10 @@ class Video extends Component {
 			videoLineWidth: Math.floor(this.state.videoRef.current.currentTime / this.state.videoRef.current.duration * 100),
 			videoPlay: this.state.videoRef.current.paused ? false : true,
 		})
-		if(Toast.have()){
-			setTimeout(()=> {
-				Toast.destroy()
-			},500)
-		}
-		
+		// if(!this.state.videoRef.current.paused){
+		// 	Toast.destroy()
+		// }
+		// console.log(this.state.videoRef.current.paused)
 		// if(!this.timer && !this.state.videoRef.current.paused) {
 		// 	this.timer = setTimeout(()=>{
 		// 		$('.video_title').addClass('video_title_none');
@@ -312,6 +367,7 @@ class Video extends Component {
 	// 触发播放
 	__playing() {
 		console.log('__playing')
+		Toast.destroy()
 		if(this.timer) {
 			clearTimeout(this.timer)
 		}
@@ -320,10 +376,16 @@ class Video extends Component {
 			$('.progress_bar_box').addClass('video_title_none');
 		},2000)
 	}
-	// 出发等待（加载）
+	// 触发等待（加载）
 	__waiting() {
 		console.log('__waiting')
 		Toast.changLoading()
+	}
+	// 触发 能够开始播放但可能因缓冲而需要停止时（加载）
+	__canplay() {
+		console.log('__canplay')
+		// Toast.changLoading()
+		Toast.destroy()
 	}
 	// 页面渲染
 	render() {

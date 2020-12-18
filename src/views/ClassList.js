@@ -4,6 +4,7 @@ import { classListApi } from '../server/api';
 import { mapDispatch, TvKeyCode, shouldComponentCurrUpdate } from '../utils/pageDom';
 import { connect } from 'react-redux';
 import Toast from '../components/toast/Index';
+import NoMore from './NoMore';
 import $ from 'jquery';
 
 class ClassList extends Component {
@@ -36,6 +37,7 @@ class ClassList extends Component {
 	// 组件第一次渲染完成，此时dom节点已经生成
 	componentDidMount() {
 		// 获取导航
+		this.props.editeDomList([]);
 		document.addEventListener('keydown', this.handleKeyDown);
 	}
 	// 组件将要卸载
@@ -58,7 +60,6 @@ class ClassList extends Component {
 			)
 		) {
 			// 增加dom节点
-			console.log('dom')
 			this.props.editeDomList([this.state.albumList]);
 			//将dom节点收集后，才设置当前节点
 			this.props.setCursorDom(this.state.albumList[0].cursor.random);
@@ -70,7 +71,6 @@ class ClassList extends Component {
 		// 如果当前页面存在焦点，移动滚动条
 		if(currDom.length > 0 && $('.classlist-page').is(':visible')) {
 			currBox.scrollTop(currBox.scrollTop() + currDom.offset().top - 374)
-			console.log(currDom.offset().top)
 		}
 	}
 	//监听键盘事件
@@ -80,9 +80,7 @@ class ClassList extends Component {
 		//开始判断键盘逻辑
 		if (e.keyCode === TvKeyCode.KEY_ENTER) {
 			// 确认键点击
-			console.log('模块列表')
 			this.state.albumList.forEach((item,index)=> {
-				console.log(item)
 				if (item.cursor.curr) {
 					this.props.pushRouter({
 						name: 'detail',
@@ -103,10 +101,13 @@ class ClassList extends Component {
 		try {
 			let res = await classListApi({
 				categoryid:cid,
-				moduleid:mid
+				moduleid:mid,
+				pageno: 0,
+				pagesize: 999999,
 			})
 			if(!res) {
 				this.props.deleteRouter(1);
+				this.props.deletePageDom(1);
 				Toast.plain('该分类下暂无专辑。',2000)
 				return
 			}
@@ -119,7 +120,6 @@ class ClassList extends Component {
 					item.cursor = this.setCursorObj(this.props.pageId, this.classRandomId, 'c');
 				}
 			})
-			console.log(res)
 			this.setState({
 				albumList: res.albumlist,
 				classTitle: res.category.title,
@@ -141,12 +141,13 @@ class ClassList extends Component {
 						return(<div className={'mt40 module_item3 ' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'d' + index}>
 							<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
 							<img className={'module_img2'} src={require('../assets/images/paid' + (item.paid === 1 ? 1 : 0) + (item.moduleid === 'yangxiu' ? 0 : '') + '.png')} alt={'费用'}></img>
-							<div className={'module_title1'}>{item.title}</div>
+							<div className={'module_title1 none'}>{item.title}</div>
 						</div>)
 					})}
 					<div className={'empty_module module_item3'}></div>
 					<div className={'empty_module module_item3'}></div>
 				</div>
+				{this.state.albumList.length > 9 ? <NoMore></NoMore> : ''}
 			</div>
 		);
 	}

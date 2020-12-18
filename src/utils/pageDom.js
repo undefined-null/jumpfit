@@ -701,9 +701,9 @@ export function nextCursorLocation(domList, direction) {
 				let correctDom1 = correctDom.filter(item => {
 					return item.resetDom === true
 				})
-				console.log('正常焦点列表',correctDom)
-				console.log('记忆焦点列表',correctDom1)
-				console.log('当前焦点',current)
+				// console.log('正常焦点列表',correctDom)
+				// console.log('记忆焦点列表',correctDom1)
+				// console.log('当前焦点',current)
 				if(correctDom1.length > 0) {
 					correctDom = correctDom1
 				}

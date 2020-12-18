@@ -77,6 +77,8 @@ function apiAxios(method, url, params) {
 		//传参为空的情况下
 		params = {};
 	}
+	// 请求末尾添加随机数，防止缓存
+	params.ran = Math.floor(Math.random()*100000000)
 	// //将保底的频道id加上
 	// params.default_channelid = process.env.REACT_APP_CHANNEL_ID;
 	// //进行参数排序
@@ -102,8 +104,6 @@ function apiAxios(method, url, params) {
 			for (let key in params) {
 				tempArr.push(key + '=' + params[key]);
 			}
-			let imath = Math.floor(Math.random()*100000000)
-			tempArr.push('i=' + imath);
 			addUrl = tempArr.join('&');
 			addUrl = addUrl.length ? '?' + addUrl : '';
 		}

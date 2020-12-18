@@ -13,6 +13,7 @@ import Login from './Login';
 import MyInfo from './MyInfo';
 import Search from './Search';
 import OrderQr from './OrderQr';
+import Iframe from './Iframe';
 import Toast from '../components/toast/Index';
 import { getRandom, TvKeyCode, mapDispatch } from '../utils/pageDom';
 class App extends Component {
@@ -118,6 +119,11 @@ class App extends Component {
 						return (
 							<OrderQr display={display} pageId={item.pageId} backParams={item.backParams} key={index} params={item.params}></OrderQr>
 						);
+					} else if (item.name === 'iframe') {
+						// 广告H5
+						return (
+							<Iframe display={display} pageId={item.pageId} backParams={item.backParams} key={index} params={item.params}></Iframe>
+						);
 					} else if (item.name === 'logout') {
 						// 退出登录提醒页面
 						return (
@@ -148,7 +154,7 @@ class App extends Component {
 	}
 	//监听键盘事件
 	handleKeyDown(e) {
-		// console.log('点击键盘' + e.keyCode);
+		console.log('点击键盘' + e.keyCode);
 		switch (e.keyCode) {
 			case TvKeyCode.KEY_LEFT:
 				//方向左边

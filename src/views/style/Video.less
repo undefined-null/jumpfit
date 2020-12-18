@@ -17,6 +17,9 @@
 	}
 	.video_box {
 		position: relative;
+		width: 1920px;
+		height:1080px;
+		overflow: hidden;
 		.video_title {
 			// background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.1));
 			position: absolute;
@@ -27,9 +30,10 @@
 			line-height: 150px;
 			font-size: 46px;
 			padding-left: 72px;
-			transition: top 500ms;
+			transition: all 500ms;
 			&.video_title_none {
 				top: -150px;
+				opacity: 0;
 			}
 		}
 		.progress_bar_box {
@@ -39,9 +43,10 @@
 			position: absolute;
 			bottom: 0;
 			left: 0;
-			transition: bottom 500ms;
+			transition: all 500ms;
 			&.video_title_none {
 				bottom: -150px;
+				opacity: 0;
 			}
 			// background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.5));
 			.bar_btn {

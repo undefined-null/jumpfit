@@ -3,6 +3,7 @@ import './style/Home.less';
 import {  homeIndexApi, homeModuleApi, classHomeApi } from '../server/api';
 // import { getToken, removeToken } from '../utils/token';
 import Init from './Init';
+import NoMore from './NoMore';
 import NavList from '../components/nav/NavList';
 import HomeHeader from '../components/topHeader/HomeHeader';
 // import selectSong from './SelectSong';
@@ -100,14 +101,14 @@ class Home extends Component {
 
 	// 组件第一次渲染完成，此时dom节点已经生成
 	componentDidMount() {
-		
+		this.getAppJump()
 		this.getNav();// 获取导航
 		// this.getHomeIndex();// 获取首页模块
 		// this.setState({
 		// 	initDataRefresh: !this.state.initDataRefresh,
 		// })
-		console.log('首页', this.props.params);
 		this.getClassList('home');// 获取首页分类
+		this.props.editeDomList([]);
 		document.addEventListener('keydown', this.handleKeyDown);
 	}
 	// 组件将要卸载
@@ -162,7 +163,7 @@ class Home extends Component {
 		let currDom = $('.home-page .curr')
 		// 如果当前页面存在焦点，移动滚动条
 		if(currDom.length > 0 && $('.home-page').is(':visible')) {
-			currBox.scrollTop(currBox.scrollTop() + currDom.eq(currDom.length - 1).offset().top - 334)
+			currBox.scrollTop(currBox.scrollTop() + currDom.eq(currDom.length - 1).offset().top - 384)
 		}
 		// 导航移动确认（遥控器无需确认）
 		this.state.navList.forEach(item => {
@@ -185,28 +186,117 @@ class Home extends Component {
 			// 推荐上部跳转专辑详情
 			this.state.recList.top_up.content.forEach(item => {
 				if (item.cursor.curr) {
-					this.props.pushRouter({
-						name: 'detail',
-						pageId: this.getRandom(), 
-						params: {
-							detail_id: item.id,
-							module_id: item.moduleid
+					console.log('专辑封面跳转')
+					if(!item.adtype) { // 非广告跳转
+						console.log('非广告跳转')
+						this.props.pushRouter({
+							name: 'detail',
+							pageId: this.getRandom(), 
+							params: {
+								detail_id: item.id,
+								module_id: item.moduleid
+							}
+						});
+					} else if(item.adtype === 2){ // APP跳转
+						console.log('跳转广告')
+						if(window.webapis) {
+							var appControl = new window.tizen.ApplicationControl(
+								item.appdata, // 传参
+								null,
+								"image/jpeg",
+								null);
+							var appControlReplyCallback = {
+								// callee sent a reply
+								onsuccess: function (data) {
+									for (var i = 0; i < data.length; i++) {
+										if (data[i].key == "http://tizen.org/appcontrol/data/selected") {
+											console.log('Selected image is ' + data[i].value[0]);
+										}
+									}
+								},
+								// callee returned failure
+								onfailure: function () {
+									console.log('The launch application control failed');
+								}}
+							window.tizen.application.launchAppControl(
+								appControl,
+								item.appid,
+								function () { console.log("launch application control succeed"); },
+								function (e) { console.log("launch application control failed. reason: " + e.message); },
+								appControlReplyCallback
+							);
+						} else {
+							console.log('环境不允许')
 						}
-					});
+					} else if(item.adtype === 1) {
+						console.log('跳转H5')
+						this.props.pushRouter({
+							name: 'iframe',
+							pageId: this.getRandom(),
+							params: {
+								src: item.adsrc
+							}
+						})
+					}
 					return
 				}
 			});
 			// 推荐右跳转专辑详情
 			this.state.recList.top_right.content.forEach(item => {
 				if (item.cursor.curr) {
-					this.props.pushRouter({
-						name: 'detail',
-						pageId: this.getRandom(), 
-						params: {
-							detail_id: item.id,
-							module_id: item.moduleid
+					console.log('专辑封面跳转')
+					console.log(item)
+					if(!item.adtype) { // 非广告跳转
+						console.log('非广告跳转')
+						this.props.pushRouter({
+							name: 'detail',
+							pageId: this.getRandom(), 
+							params: {
+								detail_id: item.id,
+								module_id: item.moduleid
+							}
+						});
+					} else if(item.adtype === 2){ // APP跳转
+						console.log('跳转广告')
+						if(window.webapis) {
+							var appControl = new window.tizen.ApplicationControl(
+								item.appdata, // 传参
+								null,
+								"image/jpeg",
+								null);
+							var appControlReplyCallback = {
+								// callee sent a reply
+								onsuccess: function (data) {
+									for (var i = 0; i < data.length; i++) {
+										if (data[i].key == "http://tizen.org/appcontrol/data/selected") {
+											console.log('Selected image is ' + data[i].value[0]);
+										}
+									}
+								},
+								// callee returned failure
+								onfailure: function () {
+									console.log('The launch application control failed');
+								}}
+							window.tizen.application.launchAppControl(
+								appControl,
+								item.appid,
+								function () { console.log("launch application control succeed"); },
+								function (e) { console.log("launch application control failed. reason: " + e.message); },
+								appControlReplyCallback
+							);
+						} else {
+							console.log('环境不允许')
 						}
-					});
+					} else if(item.adtype === 1) {
+						console.log('跳转H5')
+						this.props.pushRouter({
+							name: 'iframe',
+							pageId: this.getRandom(),
+							params: {
+								src: item.adsrc
+							}
+						})
+					}
 					return
 				}
 			});
@@ -242,28 +332,116 @@ class Home extends Component {
 			// 推荐底部跳转专辑详情
 			this.state.recList.top_bottom.content.forEach(item => {
 				if (item.cursor.curr) {
-					this.props.pushRouter({
-						name: 'detail',
-						pageId: this.getRandom(), 
-						params: {
-							detail_id: item.id,
-							module_id: item.moduleid
+					console.log('专辑封面跳转')
+					if(!item.adtype) { // 非广告跳转
+						console.log('非广告跳转')
+						this.props.pushRouter({
+							name: 'detail',
+							pageId: this.getRandom(), 
+							params: {
+								detail_id: item.id,
+								module_id: item.moduleid
+							}
+						});
+					} else if(item.adtype === 2){ // APP跳转
+						console.log('跳转广告')
+						if(window.webapis) {
+							var appControl = new window.tizen.ApplicationControl(
+								item.appdata, // 传参
+								null,
+								"image/jpeg",
+								null);
+							var appControlReplyCallback = {
+								// callee sent a reply
+								onsuccess: function (data) {
+									for (var i = 0; i < data.length; i++) {
+										if (data[i].key == "http://tizen.org/appcontrol/data/selected") {
+											console.log('Selected image is ' + data[i].value[0]);
+										}
+									}
+								},
+								// callee returned failure
+								onfailure: function () {
+									console.log('The launch application control failed');
+								}}
+							window.tizen.application.launchAppControl(
+								appControl,
+								item.appid,
+								function () { console.log("launch application control succeed"); },
+								function (e) { console.log("launch application control failed. reason: " + e.message); },
+								appControlReplyCallback
+							);
+						} else {
+							console.log('环境不允许')
 						}
-					});
+					} else if(item.adtype === 1) {
+						console.log('跳转H5')
+						this.props.pushRouter({
+							name: 'iframe',
+							pageId: this.getRandom(),
+							params: {
+								src: item.adsrc
+							}
+						})
+					}
 					return
 				}
 			});
 			// 氧秀推荐跳转专辑详情
 			this.state.yangxiuRecList.forEach(item => {
 				if (item.cursor.curr) {
-					this.props.pushRouter({
-						name: 'detail',
-						pageId: this.getRandom(), 
-						params: {
-							detail_id: item.id,
-							module_id: item.moduleid
+					console.log('专辑封面跳转')
+					if(!item.adtype) { // 非广告跳转
+						console.log('非广告跳转')
+						this.props.pushRouter({
+							name: 'detail',
+							pageId: this.getRandom(), 
+							params: {
+								detail_id: item.id,
+								module_id: item.moduleid
+							}
+						});
+					} else if(item.adtype === 2){ // APP跳转
+						console.log('跳转广告')
+						if(window.webapis) {
+							var appControl = new window.tizen.ApplicationControl(
+								item.appdata, // 传参
+								null,
+								"image/jpeg",
+								null);
+							var appControlReplyCallback = {
+								// callee sent a reply
+								onsuccess: function (data) {
+									for (var i = 0; i < data.length; i++) {
+										if (data[i].key == "http://tizen.org/appcontrol/data/selected") {
+											console.log('Selected image is ' + data[i].value[0]);
+										}
+									}
+								},
+								// callee returned failure
+								onfailure: function () {
+									console.log('The launch application control failed');
+								}}
+							window.tizen.application.launchAppControl(
+								appControl,
+								item.appid,
+								function () { console.log("launch application control succeed"); },
+								function (e) { console.log("launch application control failed. reason: " + e.message); },
+								appControlReplyCallback
+							);
+						} else {
+							console.log('环境不允许')
 						}
-					});
+					} else if(item.adtype === 1) {
+						console.log('跳转H5')
+						this.props.pushRouter({
+							name: 'iframe',
+							pageId: this.getRandom(),
+							params: {
+								src: item.adsrc
+							}
+						})
+					}
 					return
 				}
 			});
@@ -282,15 +460,60 @@ class Home extends Component {
 								}
 							});
 						} else {
-							this.props.pushRouter({
-								name: 'detail',
-								pageId: this.getRandom(),
-								params: {
-									detail_id: item1.id,
-									module_id: item1.moduleid
-								}
-							});
+					console.log('专辑封面跳转')
+					if(!item1.adtype) { // 非广告跳转
+						console.log('非广告跳转')
+						this.props.pushRouter({
+							name: 'detail',
+							pageId: this.getRandom(), 
+							params: {
+								detail_id: item1.id,
+								module_id: item1.moduleid
+							}
+						});
+					} else if(!item1.adtype === 2){ // APP跳转
+						console.log('跳转广告')
+						if(window.webapis) {
+							var appControl = new window.tizen.ApplicationControl(
+								item1.appdata, // 传参
+								null,
+								"image/jpeg",
+								null);
+							var appControlReplyCallback = {
+								// callee sent a reply
+								onsuccess: function (data) {
+									for (var i = 0; i < data.length; i++) {
+										if (data[i].key == "http://tizen.org/appcontrol/data/selected") {
+											console.log('Selected image is ' + data[i].value[0]);
+										}
+									}
+								},
+								// callee returned failure
+								onfailure: function () {
+									console.log('The launch application control failed');
+								}}
+							window.tizen.application.launchAppControl(
+								appControl,
+								item1.appid,
+								function () { console.log("launch application control succeed"); },
+								function (e) { console.log("launch application control failed. reason: " + e.message); },
+								appControlReplyCallback
+							);
+						} else {
+							console.log('环境不允许')
 						}
+					} else if(!item1.adtype === 1) {
+						console.log('跳转H5')
+						this.props.pushRouter({
+							name: 'iframe',
+							pageId: this.getRandom(),
+							params: {
+								src: item1.adsrc
+							}
+						})
+					}
+					return
+				}
 						return
 					}
 				})
@@ -313,8 +536,6 @@ class Home extends Component {
 			// 判断焦点
 			let exit = false
 			let module_index = 0
-			console.log(this.state.navList)
-			console.log(this.state.moduleId)
 			this.state.navList.forEach((item,index) => {
 				if(item.cursor.curr) {
 					exit = true
@@ -325,7 +546,7 @@ class Home extends Component {
 			})
 			// 退出APP
 			if(exit) {
-				console.log('退出APP')
+				// console.log('退出APP')
 				setTimeout(()=> {
 					this.props.pushRouter({ name: 'exitApp', pageId: this.getRandom() });
 				},5)
@@ -333,6 +554,24 @@ class Home extends Component {
 				this.props.setCursorDom(this.state.navList[module_index].cursor.random);
 				$('.home-page').scrollTop(0)
 			}
+		}
+	}
+	// 接受APP跳转带参
+	getAppJump() {
+		if(window.webapis) {
+			var reqAppControl = window.tizen.application.getCurrentApplication().getRequestedAppControl();
+			if (reqAppControl) {
+				console.log("Requester AppID : " + reqAppControl.callerAppId);
+				var appControl = reqAppControl.appControl;
+				console.log("Requester operation : " + appControl.operation);
+				if (appControl.operation == "http://tizen.org/appcontrol/operation/pick") {
+					console.log('我接收到参数了: ', appControl.operation);
+					// var data = new tizen.ApplicationControlData("http://tizen.org/appcontrol/data/selected", ["Image1.jpg"]);
+					// reqAppControl.replyResult([data]);
+				}
+			}
+		} else {
+			console.log('环境不支持')
 		}
 	}
 	// 获取导航
@@ -442,7 +681,6 @@ class Home extends Component {
 						}
 					})
 				});
-				console.log(res.top)
 				res.top[0].content.forEach((item,index)=>{
 					if((index) % 3 === 0) {
 						item.cursor = this.setCursorObj(this.props.pageId, this.homeModuleId, 'c', null,{left: 'right'});
@@ -452,7 +690,6 @@ class Home extends Component {
 						item.cursor = this.setCursorObj(this.props.pageId, this.homeModuleId, 'c');
 					}
 				})
-				console.log(res.top)
 				// 首页模块绑定
 				this.setState({
 					moduleList: res.data,
@@ -489,11 +726,10 @@ class Home extends Component {
 	
 	// 导航回调
 	getModuleCode = (result, code) => {
-		console.log(result,code)
 		try {
 			this.getClassList(code)
 		} catch (e) {
-			console.log('查询错误了', e);
+			console.log(e);
 		}
 	}
 	// 页面渲染
@@ -521,7 +757,7 @@ class Home extends Component {
 							return (<div className={'module_item3 mt40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'tu' + index}>
 									<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
 									<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + (item.moduleid === 'yangxiu' ? 0 : '') + '.png')} alt={'费用'}></img>
-									<div className={'module_title1'}>{item.title}</div>
+									<div className={'module_title1 none'}>{item.title}</div>
 								</div>)
 						}else {
 							return ''
@@ -535,29 +771,29 @@ class Home extends Component {
 						{this.state.recList.top_right.content.map((item,index) => {
 							if(this.state.moduleId === 'home') {
 							return (<div className={'module_item4 mt40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'tr' + index}>
-									<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
+									<img className={'module_img1'} src={this.state.imgPath + item.bigimage} alt={item.title}></img>
 									<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + (item.moduleid === 'yangxiu' ? 0 : '') + '.png')} alt={'费用'}></img>
-									<div className={'module_title1'}>{item.title}</div>
+									<div className={'module_title1 none'}>{item.title}</div>
 								</div>)
 						}else{return ''}})}
 					</div>
-					<div className={'module_box flex-bt'}>
+					<div className={'module_box flex-bt ' + ( this.state.moduleId === 'home' ? 'mb32' : '')}>
 						{this.state.recList.top_bottom.content.map((item,index) => {
 							if(this.state.moduleId === 'home') {
 							return (<div className={'module_item3 mt40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'tb' + index}>
 									<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
 									<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + (item.moduleid === 'yangxiu' ? 0 : '') + '.png')} alt={'费用'}></img>
-									<div className={'module_title1'}>{item.title}</div>
+									<div className={'module_title1 none'}>{item.title}</div>
 								</div>)
 						}else{return ''}})}
 					</div>
-					<div className={'module_box flex-bt flex-wrap'}>
+					<div className={'module_box flex-bt flex-wrap ' + (this.state.moduleId === 'yangxiu' ? 'mb32' : '')}>
 						{this.state.yangxiuRecList.map((item,index) => {
 							if(this.state.moduleId === 'yangxiu') {
 							return (<div className={'module_item3 mt40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'yx' + index}>
 									<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
 									<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + (item.moduleid === 'yangxiu' ? 0 : '') + '.png')} alt={'费用'}></img>
-									<div className={'module_title1'}>{item.title}</div>
+									<div className={'module_title1 none'}>{item.title}</div>
 								</div>)
 						}else{return ''}})}
 					</div>
@@ -570,9 +806,10 @@ class Home extends Component {
 						<div className={'empty_module module_item5'}></div>
 						<div className={'empty_module module_item5'}></div>
 					</div>
+					{/*  */}
 					{this.state.moduleList.map((item,index)=>{
 						return (<div key={'md'+ index}>
-							<div className={'module_title0 mt40'}>{item.title}</div>
+							<div className={'module_title0 mt40 pt32'}>{item.title}</div>
 							<div className={'module_box flex-bt flex-wrap' + (this.state.moduleId === 'yangxiu' ? ' module_boxy' : '')}>
 								{item.content.map((item1,index1)=>{
 									return (<div className={'mt40 '
@@ -580,16 +817,18 @@ class Home extends Component {
 										+ (item1.type === 'more' ? ' module_item_more' : '')
 										+ (item1.cursor.curr ? ' curr' : '')}
 										ref={item1.cursor.refs} key={'md' + index + '' + index1}>
-										<img className={'module_img1' + (item1.type === 'more' ? ' none' : '')} src={this.state.imgPath + item1.cover} alt={item1.title}></img>
+										<img className={'module_img1' + (item1.type === 'more' ? ' none' : '') + (this.state.moduleId === 'home' ? '' : ' none')} src={this.state.imgPath + item1.cover} alt={item1.title}></img>
+										<img className={'module_img1' + (item1.type === 'more' ? ' none' : '') + (this.state.moduleId !== 'home' ? '' : ' none')} src={this.state.imgPath + (index1 === 1 || index1===2 ? (item1.vertical ? item1.vertical : item1.bigimage) : item1.bigimage)} alt={item1.title}></img>
 										<img className={'module_img2' + (item1.type === 'more' ? ' none' : '')} src={require('../assets/images/paid' + item1.paid + (item1.moduleid === 'yangxiu' ? 0 : '') + '.png')} alt={'费用'}></img>
 										<img className={'mr40' + (item1.type === 'more' ? '' : ' none')} src={require('../assets/images/home_more.png')} alt={item1.title}></img>
-										<div className={'module_title1'}>{item1.title}</div>
+										<div className={'module_title1 ' + (index1 > 5 ? '' : 'none')}>{item1.title}</div>
 									</div>
 								)})}
 							</div>
 						</div>
 						)
 					})}
+					<NoMore></NoMore>
 			</div>
 		);
 	}

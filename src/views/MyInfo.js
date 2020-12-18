@@ -6,6 +6,7 @@ import { connect } from 'react-redux';
 import NavList from '../components/nav/NavList';
 import Popup from '../components/affirm/Popup';
 import Toast from '../components/toast/Index';
+import NoMore from './NoMore.js';
 import $ from 'jquery';
 
 class MyInfo extends Component {
@@ -157,9 +158,6 @@ class MyInfo extends Component {
 	// 组件第一次渲染完成，此时dom节点已经生成
 	componentDidMount() {
 		// 获取导航
-		document.addEventListener('keydown', this.handleKeyDown);
-		console.log('----------------')
-		console.log(this.props.params)
 		if(this.props.params) {
 			// 带title_id 过来
 			if(this.props.params.title_id || this.props.params.module_id) {
@@ -177,6 +175,9 @@ class MyInfo extends Component {
 			this.getNav()
 			this.tagChose()
 		}
+		
+		document.addEventListener('keydown', this.handleKeyDown);
+		this.props.editeDomList([]);
 	}
 	// 组件将要卸载
 	componentWillUnmount() {
@@ -199,7 +200,6 @@ class MyInfo extends Component {
 				// !prevState.initDataVip
 			)
 		) {
-			console.log('首次')
 			// 增加dom节点
 			this.props.deleteCompDom(this.myRandomId)
 			this.props.deleteCompDom(this.myNavRandomId)
@@ -242,8 +242,6 @@ class MyInfo extends Component {
 			this.state.navList.forEach(item => {
 				if(item.cursor.curr) {
 					if(item.id !== this.state.moduleId) {
-						console.log('导航移动确认（遥控器无需确认）')
-						console.log(item)
 						this.setState({
 							moduleId: item.id
 						})
@@ -256,8 +254,6 @@ class MyInfo extends Component {
 			this.state.myTitleList.forEach(item => {
 				if(item.cursor.curr) {
 					if(item.id !== this.state.myTitleId) {
-						console.log('标题移动确认（遥控器无需确认）')
-						console.log(item)
 						this.setState({
 							myTitleId: item.id
 						})
@@ -416,6 +412,22 @@ class MyInfo extends Component {
 					return
 				}
 			})
+			// 我的数据点击
+			this.state.sportList.forEach(item => {
+				item.content.forEach(item1 => {
+					if(item1.cursor.curr) {
+						this.props.pushRouter({
+							name: 'detail',
+							pageId: this.getRandom(), 
+							params: {
+								detail_id: item1.albumid,
+								module_id: item1.moduleid
+							}
+						});
+						return
+					}
+				})
+			})
 		} else if(e.keyCode === TvKeyCode.KEY_BACK) {
 			if(this.state.domBack) {
 				this.setState({
@@ -426,8 +438,6 @@ class MyInfo extends Component {
 			// 判断焦点
 			let back = false
 			let module_index = 0
-			console.log(this.state.navList)
-			console.log(this.state.moduleId)
 			// 氧秀已购列表
 			this.state.navList.forEach((item,index) => {
 				if(item.cursor.curr) {
@@ -446,12 +456,13 @@ class MyInfo extends Component {
 			if(back) {
 				// setTimeout(()=> {
 					// this.props.pushRouter({ name: 'exitApp', pageId: this.getRandom() });
-					this.props.deleteRouter(1);
+					this.props.deleteRouter(1,{
+						payStatus: true
+					});
 					this.props.deletePageDom(1);
 					
 				// },5)
 			} else {
-				console.log('返回键重置焦点')
 				if(this.state.myTitleId === 'data') {
 					this.props.setCursorDom(this.state.myTitleList[3].cursor.random);
 				} else {
@@ -494,7 +505,6 @@ class MyInfo extends Component {
 	
 	// 导航回调
 	getModuleCode = (res,code) => {
-		console.log(code)
 		if(code === this.state.moduleId) return
 		this.setState({
 			moduleId: code,
@@ -529,8 +539,6 @@ class MyInfo extends Component {
 				moduleColor = item.color
 			}
 		})
-		console.log('+++++++++++++++++++++++++++++++++')
-		console.log(this.state.moduleId)
 		this.setState({
 			navList: this.state.navList,
 			myTitleList: this.state.myTitleList,
@@ -577,7 +585,6 @@ class MyInfo extends Component {
 			})
 			if(res) {
 				// 用户已购买会员
-				console.log(res)
 				res.result.cursor = this.setCursorObj(this.props.pageId, this.myRandomId, 'd')
 				this.state.vipCard[0] = res.result
 				this.setState({
@@ -595,7 +602,6 @@ class MyInfo extends Component {
 				})
 				this.getVipCard()
 			}
-			console.log(res)
 		} catch(e) {
 			console.log(e)
 		}
@@ -622,7 +628,6 @@ class MyInfo extends Component {
 				Toast.plain('会员卡获取失败！',2000)
 				// Toast.destroy()
 			}
-			console.log(res)
 		} catch(e) {
 			console.log(e)
 		}
@@ -633,7 +638,7 @@ class MyInfo extends Component {
 			let res = await albumBuyApi()
 			if(res) {
 				// 用户已购氧秀专辑
-				console.log(res)
+				
 				res.result.forEach(item => {
 					item.cursor = this.setCursorObj(this.props.pageId, this.myRandomId, 'd');
 				})
@@ -653,7 +658,6 @@ class MyInfo extends Component {
 				})
 				Toast.destroy()
 			}
-			console.log(res)
 		} catch(e) {
 			console.log(e)
 		}
@@ -667,7 +671,6 @@ class MyInfo extends Component {
 				pageno: 0,
 				pagesize: 9999
 			})
-			console.log(res)
 			if(res) {
 				res.result.forEach((item,index)=>{
 					if((index) % 3 === 0) {
@@ -705,7 +708,6 @@ class MyInfo extends Component {
 				pageno: 0,
 				pagesize: 9999
 			})
-			console.log(res)
 			if(res) {
 				res.data.forEach((item,index)=>{
 					if((index) % 3 === 0) {
@@ -739,7 +741,6 @@ class MyInfo extends Component {
 	async getUserSport() {
 		try {
 			let res = await sportApi()
-			console.log(res)
 			if(res) {
 				res.history.forEach((item,index)=>{
 					item.content.forEach(item1 => {
@@ -767,14 +768,12 @@ class MyInfo extends Component {
 	}
 	// 弹窗取消
 	closeAffirm() {
-		console.log('关闭弹窗');
 		this.setState({
 			affirmDelete: false
 		});
 	}
 	// 弹窗确认
 	deleteAllList() {
-		console.log('删除全部数据');
 		this.setState({
 			affirmDelete: false
 		});
@@ -836,12 +835,11 @@ class MyInfo extends Component {
 											{this.state.yangxiuList.map((item,index)=>{
 												return (<div className={'module_item4 mb40 mr40 my_scale' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'yx' + index}>
 														<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
-														<div className={'module_title1'}>{item.title}</div>
+														<div className={'module_title1 none'}>{item.title}</div>
 													</div>)
 											})}
-											<div className={'module_item4 mr40'}></div>
-											<div className={'module_item4 mr40'}></div>
-											<div className={'module_item4 mr40'}></div>
+											<div className={'empty_module module_item4'}></div>
+											{this.state.yangxiuList.length > 11 ? <NoMore></NoMore> : ''}
 										</div>
 										)
 									:
@@ -879,11 +877,11 @@ class MyInfo extends Component {
 										return(<div className={'module_item3 my_scale mb40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'his' + index}>
 											<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
 											<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + (item.moduleid === 'yangxiu' ? 0 : '') + '.png')} alt={'费用'}></img>
-											<div className={'module_title1'}>{item.title}</div>
+											<div className={'module_title1 none'}>{item.title}</div>
 										</div>
 									)})}
 									<div className={'empty_module module_item3'}></div>
-									<div className={'empty_module module_item3'}></div>
+									{this.state.historyList.length > 11 ? <NoMore></NoMore> : ''}
 								</div>
 							:
 								<div className={'list_empty'}>您还没有训练记录哦~</div>
@@ -896,11 +894,11 @@ class MyInfo extends Component {
 										return(<div className={'module_item3 my_scale mb40' + (item.cursor.curr ? ' curr' : '')} ref={item.cursor.refs} key={'his' + index}>
 											<img className={'module_img1'} src={this.state.imgPath + item.cover} alt={item.title}></img>
 											<img className={'module_img2'} src={require('../assets/images/paid' + item.paid + (item.moduleid === 'yangxiu' ? 0 : '') + '.png')} alt={'费用'}></img>
-											<div className={'module_title1'}>{item.title}</div>
+											<div className={'module_title1 none'}>{item.title}</div>
 										</div>
 									)})}
 									<div className={'empty_module module_item3'}></div>
-									<div className={'empty_module module_item3'}></div>
+									{this.state.historyList.length > 11 ? <NoMore></NoMore> : ''}
 								</div>
 							:
 								<div className={'list_empty'}>您还没有收藏记录哦~</div>
@@ -919,7 +917,7 @@ class MyInfo extends Component {
 											<div className={'fs26 mt24'}>总时长（分钟）</div>
 										</div>
 										<div className={'sport_info_item'}>
-											<div className={'fs56 font-bold'}>{this.props.userInfo.total_calorie}</div>
+											<div className={'fs56 font-bold'}>{parseInt(this.props.userInfo.total_calorie)}</div>
 											<div className={'fs26 mt24'}>总消耗（千卡）</div>
 										</div>
 										<div className={'sport_info_item'}>

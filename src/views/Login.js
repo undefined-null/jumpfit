@@ -86,9 +86,7 @@ class Login extends Component {
 		//开始判断键盘逻辑
 		if (e.keyCode === TvKeyCode.KEY_ENTER) {
 			// 确认键点击
-			console.log('模块列表')
 			this.state.albumList.forEach((item,index)=> {
-				console.log(item)
 				if (item.cursor.curr) {
 					this.props.pushRouter({
 						name: 'detail',
@@ -108,7 +106,6 @@ class Login extends Component {
 	async getQrCode() {
 		try {
 			let res = await userCodeApi()
-			console.log(res)
 			this.setState({
 				qrCode: res
 			})
