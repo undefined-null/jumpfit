@@ -112,9 +112,12 @@ class ClassList extends Component {
 				return
 			}
 			res.albumlist.forEach((item,index)=>{
-				if((index) % 3 === 0) {
+				if (index === res.albumlist.length - 1) {
+					// 最后一个焦点设置为无法右移
+					item.cursor = this.setCursorObj(this.props.pageId, this.classRandomId, 'c', null,{right: 'no'});
+				} else if ((index) % 3 === 0) {
 					item.cursor = this.setCursorObj(this.props.pageId, this.classRandomId, 'c', null,{left: 'right'});
-				} else if((index+1) % 3 === 0) {
+				} else if ((index+1) % 3 === 0) {
 					item.cursor = this.setCursorObj(this.props.pageId, this.classRandomId, 'c', null,{right: 'left'});
 				} else {
 					item.cursor = this.setCursorObj(this.props.pageId, this.classRandomId, 'c');
